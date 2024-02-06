@@ -1,0 +1,7 @@
+body {
+  margin: 0; /* Reset default margin to ensure full width */
+}
+
+#content-container {
+  scroll-padding-top: 120px; /* Adjust the value according to your sticky navbar's height */
+}

@@ -1,0 +1,10 @@
+/* @media (min-width: 769px) {
+    .navbar-toggler {
+      display: none;
+    }
+  } */
+/* Add or modify styles as needed */
+.navbar {
+  position: relative;
+  /* Other styles, if any */
+}

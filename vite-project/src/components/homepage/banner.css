@@ -1,0 +1,46 @@
+.ctext {
+  color: chocolate;
+}
+.main-banner {
+  position: relative;
+  height: 100vh; /* Set the height of the video section to 100% of the viewport height */
+  /* Hide overflowing content */
+}
+
+#bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%; /* Make the video cover the entire width of the viewport */
+  height: 100%; /* Make the video cover the entire height of the viewport */
+  object-fit: cover; /* Ensure the video maintains its aspect ratio and covers the entire container */
+}
+
+.video-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff; /* Adjust text color for better visibility */
+  text-align: center;
+}
+.searchBox {
+  background-color: #fff;
+  width: 600px;
+  height: 50px;
+  border-radius: 50px;
+  outline: none;
+  border: 2px solid blue;
+  font-size: 20px;
+  text-align: center;
+  padding-left: 50px;
+  padding-right: 80px;
+}
+
+@media (max-width: 768px) {
+  .searchBox {
+    width: 100%; /* Use 100% width for smaller screens */
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
