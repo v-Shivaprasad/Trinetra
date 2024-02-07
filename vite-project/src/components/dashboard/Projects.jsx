@@ -11,8 +11,10 @@ const Projects = ({ email }) => {
         `http://localhost:3001/api/reportLinkGenerator?fileName=${fileName}`
       );
       const response = await res.json();
+      await setreportLink(response.url);
+      const generatedReportLink = response.url;
+      return generatedReportLink;
       console.log(response);
-      setreportLink(response.url);
     } catch (error) {
       console.log(error);
     }
@@ -182,139 +184,74 @@ const Projects = ({ email }) => {
           }}
         >
           <p>Projects</p>
-          <ul>
-            {Pro.map((pro, ind) => (
-              <li className="Plist" key={ind}>
-                <h2>{pro.Title}</h2>
-                <small>
-                  <a
-                    data-bs-toggle="modal"
-                    data-bs-target={`#ProjectModal-${ind}`}
-                    onClick={() => reportLinkGenerator(pro.File)}
-                  >
-                    see more
-                  </a>
-                </small>
-                {email != pro.Email ? (
-                  <div className="ml-auto">
-                    <a
-                      target="_blank"
-                      onClick={() => {
-                        SavePro(pro);
-                      }}
-                    >
-                      {Favorites.some((fav) => fav.id === pro._id) ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="black"
-                          class="bi bi-bookmark-fill"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M2 2v13.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          class="bi bi-bookmark"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1z" />
-                        </svg>
-                      )}
-                    </a>
-
-                    <a onClick={() => handleLikeClick(pro.id)}>
-                      {likedProjects.some(
-                        (likedProj) => likedProj.id === pro.id
-                      ) ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="yellow"
-                          className="bi bi-star-fill"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                        </svg>
-                      ) : (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          fill="currentColor"
-                          className="bi bi-star"
-                          viewBox="0 0 16 16"
-                        >
-                          <path d="M2.866 14.85c-.078.444.36.791.746.593l4.39-2.256 4.389 2.256c.386.198.824-.149.746-.592l-.83-4.73 3.522-3.356c.33-.314.16-.888-.282-.95l-4.898-.696L8.465.792a.513.513 0 0 0-.927 0L5.354 5.12l-4.898.696c-.441.062-.612.636-.283.95l3.523 3.356-.83 4.73zm4.905-2.767-3.686 1.894.694-3.957a.56.56 0 0 0-.163-.505L1.71 6.745l4.052-.576a.53.53 0 0 0 .393-.288L8 2.223l1.847 3.658a.53.53 0 0 0 .393.288l4.052.575-2.906 2.77a.56.56 0 0 0-.163.506l.694 3.957-3.686-1.894a.5.5 0 0 0-.461 0z" />
-                        </svg>
-                      )}
-                    </a>
-                  </div>
-                ) : null}
-
-                <div
-                  className="modal fade"
-                  id={`ProjectModal-${ind}`}
-                  data-bs-backdrop="static"
-                  data-bs-keyboard="false"
-                  tabindex="-1"
-                  aria-labelledby="staticBackdropLabel"
-                  aria-hidden="true"
-                >
-                  <div className="modal-dialog">
-                    <div className="modal-content">
-                      <div className="modal-header">
-                        <h5 className="modal-title" id="staticBackdropLabel">
-                          {pro.Title}
-                        </h5>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          onClick={() => {
-                            setreportLink(" ");
-                          }}
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                      <div className="modal-body">
-                        <div className="mb-3">
-                          <div className="Procont">
-                            <p>
-                              Technologies used:
-                              {pro.Technology}
-                            </p>
-
-                            <p>About Project:{pro.Description}</p>
-                            <div>
-                              <h5>UploadedBy:</h5>
-                              {pro.Email}
+          <ul className="list-unstyled">
+            {Pro.map((project, index) => (
+              <div className="ParentBox">
+                <div className="container mt-5 mb-3">
+                  {" "}
+                  <div className="row">
+                    <li key={index}>
+                      <div className="col-md-4">
+                        <div className="card p-3 mb-2">
+                          <div className="d-flex justify-content-between">
+                            <div className="d-flex flex-row align-items-center">
+                              <div className="icon">
+                                {" "}
+                                <i className="bx bxl-mailchimp"></i>{" "}
+                              </div>
+                              <div className="ms-2 c-details">
+                                <h6 className="mb-0">{project.Title}</h6>{" "}
+                                <span>{project.Email}</span>
+                              </div>
                             </div>
-
-                            <a href={reportLink} target="blank">
-                              View Project Report
-                            </a>
+                            <div className="badge">
+                              {" "}
+                              <span>Design</span>{" "}
+                            </div>
+                          </div>
+                          <div className="mt-5">
+                            <h3 className="heading">{project.Description}</h3>
                             <br />
-
-                            <a href={pro.tget} target="blank">
-                              get me to Code
-                            </a>
+                            <h5>Technologies Used:</h5> {project.Technology}
+                            <div className="mt-5">
+                              <div className="progress">
+                                <div
+                                  className="progress-bar"
+                                  role="progressbar"
+                                  style={{ width: "50%" }}
+                                  value={70}
+                                  aria-valuenow={70}
+                                  aria-valuemin={0}
+                                  aria-valuemax={100}
+                                ></div>
+                              </div>
+                              <div className="mt-3">
+                                {" "}
+                                <a href={project.tget} target="_blank">
+                                  Get code
+                                </a>
+                                &nbsp; &nbsp;
+                                <a
+                                  onClick={async () => {
+                                    const generatedReportLink =
+                                      await reportLinkGenerator(project.File);
+                                    window.open(generatedReportLink, "_blank");
+                                  }}
+                                >
+                                  Project Report
+                                </a>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="modal-footer"></div>
-                    </div>
+                    </li>
                   </div>
                 </div>
-              </li>
+              </div>
             ))}
           </ul>
+
           <br />
           <br />
           <br />

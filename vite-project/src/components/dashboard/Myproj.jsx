@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./Content.css";
+import logo from "../../assets/logo.jpg";
 const Myproj = ({ email }) => {
   // const { client, setclient } = useAuth();
   // const email = client.Email;
@@ -347,191 +348,197 @@ const Myproj = ({ email }) => {
                   >
                     <p>Projects</p>
 
-                    <ul>
-                      {Prolist.map((pro, ind) => (
-                        <li className="Plist" key={ind}>
-                          <h2>{pro.Title}</h2>
-                          <small>
-                            <a
-                              data-bs-toggle="modal"
-                              data-bs-target={`#ProjModal-${ind}`}
-                              target="blank"
-                              onClick={() => {
-                                const fileName = pro.File;
-                                console.log(
-                                  `Clicked button for file: ${fileName}`
-                                );
-                                reportLinkGenerator(fileName);
-                              }}
-                            >
-                              see more
-                            </a>
-                            <br />
-                            <a
-                              data-bs-toggle="modal"
-                              data-bs-target={`#UpdateProjects-${ind}`}
-                            >
-                              Update
-                            </a>
-                          </small>
-
-                          <div
-                            className="modal fade"
-                            id={`UpdateProjects-${ind}`}
-                            data-bs-backdrop="static"
-                            data-bs-keyboard="false"
-                            tabIndex="-1"
-                            aria-labelledby="staticBackdropLabel"
-                            aria-hidden="true"
-                          >
-                            <div className="modal-dialog">
-                              <div className="modal-content">
-                                <div className="modal-header">
-                                  <h5
-                                    className="modal-title"
-                                    id="staticBackdropLabel"
-                                  >
-                                    Update Project: {pro.Title}
-                                  </h5>
-                                  <button
-                                    type="button"
-                                    className="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                  ></button>
-                                </div>
-                                <div className="modal-body">
-                                  <div className="mb-3">
-                                    <div className="Procont">
-                                      <label htmlFor="updateTitle">
-                                        Project Title:
-                                      </label>
-                                      <input
-                                        id="updateTitle"
-                                        type="text"
-                                        className="form-control"
-                                        defaultValue={pro.Title}
-                                        onChange={(e) =>
-                                          setUpdateTitle(e.target.value)
-                                        }
-                                      />
-
-                                      <label htmlFor="updateTech">
-                                        Technologies used:
-                                      </label>
-                                      <input
-                                        id="updateTech"
-                                        type="text"
-                                        className="form-control"
-                                        defaultValue={pro.tech}
-                                        onChange={(e) =>
-                                          setUpdateTech(e.target.value)
-                                        }
-                                      />
-
-                                      <label htmlFor="updateDescription">
-                                        About Project:
-                                      </label>
-                                      <textarea
-                                        id="updateDescription"
-                                        type="text"
-                                        className="form-control"
-                                        defaultValue={pro.Description}
-                                        onChange={(e) =>
-                                          setUpdateDescription(e.target.value)
-                                        }
-                                      />
-
-                                      <label htmlFor="UpdateLink">
-                                        Update Link:
-                                      </label>
-                                      <input
-                                        type="text"
-                                        id="UpdateLink"
-                                        className="form-control"
-                                        defaultValue={pro.tget}
-                                        onChange={(e) =>
-                                          setUpdateLink(e.target.value)
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="modal-footer">
-                                  <button
-                                    id="UpdateModalClose"
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    data-bs-dismiss="modal"
-                                  >
-                                    Close
-                                  </button>
-                                  <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={() => handleUpdate(pro.id)}
-                                  >
-                                    Save changes
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-                          <div
-                            className="modal fade"
-                            id={`ProjModal-${ind}`}
-                            data-bs-backdrop="static"
-                            data-bs-keyboard="false"
-                            tabIndex="-1"
-                            aria-labelledby="staticBackdropLabel"
-                            aria-hidden="true"
-                          >
-                            <div className="modal-dialog">
-                              <div className="modal-content">
-                                <div className="modal-header">
-                                  <h5
-                                    className="modal-title"
-                                    id="staticBackdropLabel"
-                                  >
-                                    {pro.Title}
-                                  </h5>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateLinkToNull()}
-                                    className="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                  ></button>
-                                </div>
-                                <div className="modal-body">
-                                  <div className="mb-3">
-                                    <div className="Procont">
-                                      <p>
-                                        Technologies used:
-                                        {pro.tech}
-                                      </p>
-
-                                      <p>About Project:{pro.Description}</p>
-                                      <div>
-                                        <h5>UploadedBy:</h5>
-                                        {pro.Email}
+                    <ul className="card-container list-unstyled">
+                      {Prolist.map((project, index) => (
+                        <div className="ParentBox">
+                          <div className="container mt-5 mb-3">
+                            {" "}
+                            <div className="row">
+                              <li key={index}>
+                                <div className="col-md-4">
+                                  <div className="card p-3 mb-2">
+                                    <div className="d-flex justify-content-between">
+                                      <div className="d-flex flex-row align-items-center">
+                                        <div className="icon">
+                                          {" "}
+                                          <i className="bx bxl-mailchimp"></i>{" "}
+                                        </div>
+                                        <div className="ms-2 c-details">
+                                          <h6 className="mb-0">
+                                            {project.Title}
+                                          </h6>{" "}
+                                          <span>{project.Email}</span>
+                                        </div>
                                       </div>
-
-                                      <a href={pro.tget} target="blank">
-                                        Get me To Code
-                                      </a>
+                                      <div className="badge">
+                                        {" "}
+                                        <span>Design</span>{" "}
+                                      </div>
+                                    </div>
+                                    <div className="mt-5">
+                                      <h3 className="heading">
+                                        {project.Description}
+                                      </h3>
                                       <br />
-                                      <a href={reportLink} target="blank">
-                                        View Project Report
-                                      </a>
+                                      <h5>Technologies Used:</h5> {project.tech}
+                                      <div className="mt-5">
+                                        <div className="progress">
+                                          <div
+                                            className="progress-bar"
+                                            role="progressbar"
+                                            style={{ width: "50%" }}
+                                            value={70}
+                                            aria-valuenow={70}
+                                            aria-valuemin={0}
+                                            aria-valuemax={100}
+                                          ></div>
+                                        </div>
+                                        <div className="mt-3">
+                                          {" "}
+                                          <a
+                                            href={project.tget}
+                                            target="_blank"
+                                          >
+                                            Get code
+                                          </a>
+                                          &nbsp; &nbsp;
+                                          <a
+                                            onClick={async () => {
+                                              const generatedReportLink =
+                                                await reportLinkGenerator(
+                                                  project.File
+                                                );
+                                              window.open(
+                                                generatedReportLink,
+                                                "_blank"
+                                              );
+                                            }}
+                                          >
+                                            Project Report
+                                          </a>
+                                          &nbsp;&nbsp;
+                                          <a
+                                            data-bs-toggle="modal"
+                                            data-bs-target={`#UpdateProjects-${index}`}
+                                          >
+                                            Update
+                                          </a>
+                                        </div>
+                                      </div>
                                     </div>
                                   </div>
                                 </div>
-                                <div className="modal-footer"></div>
-                              </div>
+
+                                <div
+                                  className="modal fade"
+                                  id={`UpdateProjects-${index}`}
+                                  data-bs-backdrop="static"
+                                  data-bs-keyboard="false"
+                                  tabIndex="-1"
+                                  aria-labelledby="staticBackdropLabel"
+                                  aria-hidden="true"
+                                >
+                                  <div className="modal-dialog">
+                                    <div className="modal-content">
+                                      <div className="modal-header">
+                                        <h5
+                                          className="modal-title"
+                                          id="staticBackdropLabel"
+                                        >
+                                          Update Project: {project.Title}
+                                        </h5>
+                                        <button
+                                          type="button"
+                                          className="btn-close"
+                                          data-bs-dismiss="modal"
+                                          aria-label="Close"
+                                        ></button>
+                                      </div>
+                                      <div className="modal-body">
+                                        <div className="mb-3">
+                                          <div className="Procont">
+                                            <label htmlFor="updateTitle">
+                                              Project Title:
+                                            </label>
+                                            <input
+                                              id="updateTitle"
+                                              type="text"
+                                              className="form-control"
+                                              defaultValue={project.Title}
+                                              onChange={(e) =>
+                                                setUpdateTitle(e.target.value)
+                                              }
+                                            />
+
+                                            <label htmlFor="updateTech">
+                                              Technologies used:
+                                            </label>
+                                            <input
+                                              id="updateTech"
+                                              type="text"
+                                              className="form-control"
+                                              defaultValue={project.tech}
+                                              onChange={(e) =>
+                                                setUpdateTech(e.target.value)
+                                              }
+                                            />
+
+                                            <label htmlFor="updateDescription">
+                                              About Project:
+                                            </label>
+                                            <textarea
+                                              id="updateDescription"
+                                              type="text"
+                                              className="form-control"
+                                              defaultValue={project.Description}
+                                              onChange={(e) =>
+                                                setUpdateDescription(
+                                                  e.target.value
+                                                )
+                                              }
+                                            />
+
+                                            <label htmlFor="UpdateLink">
+                                              Update Link:
+                                            </label>
+                                            <input
+                                              type="text"
+                                              id="UpdateLink"
+                                              className="form-control"
+                                              defaultValue={project.tget}
+                                              onChange={(e) =>
+                                                setUpdateLink(e.target.value)
+                                              }
+                                            />
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="modal-footer">
+                                        <button
+                                          id="UpdateModalClose"
+                                          type="button"
+                                          className="btn btn-secondary"
+                                          data-bs-dismiss="modal"
+                                        >
+                                          Close
+                                        </button>
+                                        <button
+                                          type="button"
+                                          className="btn btn-primary"
+                                          onClick={() =>
+                                            handleUpdate(project.id)
+                                          }
+                                        >
+                                          Save changes
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </li>
                             </div>
                           </div>
-                        </li>
+                        </div>
                       ))}
                     </ul>
 
