@@ -20,14 +20,6 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   storageBucket: 'gs://trinetra-6807b.appspot.com',
 });
-// router.use(session({
-//   secret: 'Jai_balayya',
-//   resave: false,
-//   saveUninitialized: true,
-//   cookie: {
-//     maxAge: 60 * 60 * 1000, // Set the expiration time to 1 hour (in milliseconds)
-//   },
-// }));
 
 const storage = admin.storage();
 const bucket = storage.bucket();
@@ -520,70 +512,6 @@ router.get('/users/validateOtp', async (req,res) =>{
     res.status(500).json({ error: 'Internal Server Error' });
   }
 })
-
-//Multiuser logic
-// router.get("/users/initiateReg", async (req, res) => {
-//   try {
-//     const email = req.query.email;
-//     const genOtp = getRandom5DigitInt();
-
-//     // Storing OTP in the session with the user's email as part of the key
-//     req.session[`regOtp_${email}`] = genOtp;
-//     console.log(req.session);
-//     console.log('Initiation - Email:', email, 'OTP:', genOtp);
-   
-    
-
-//     const mailOptions = {
-//       from: YOUR_EMAIL,
-//       to: email,
-//       subject: 'Client Validation',
-//       text: genOtp.toString(),
-//     };
-
-//     transporter.sendMail(mailOptions, (error, info) => {
-//       if (error) {
-//         console.error('Error:', error.message);
-//         res.status(500).json({ ok: false, error: error });
-//       } else {
-//         console.log('Email sent:', info.response);
-//         res.status(201).json({ ok: true });
-//       }
-//     });
-
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ error: 'Internal Server Error' });
-//   }
-// });
-
-router.get('/users/validateOtp', async (req, res) => {
-  try {
-    const enteredOtp = req.query.otp;
-    const email = req.query.email;
-    console.log(req.session);
-
-    // Retrieve the stored OTP from the session with the user's email as part of the key
-    const storedOtp = req.session[`regOtp_${email}`];
-    console.log(storedOtp);
-    console.log(req.session);
-    console.log('Validation - Email:', email, 'Stored OTP:', storedOtp);
-
-
-    if (enteredOtp == storedOtp) {
-      res.status(201).json({ ok: true });
-
-      // Clear the stored OTP after validation
-      delete req.session[`regOtp_${email}`];
-    } else {
-      res.status(400).json({ ok: false });
-      delete req.session[`regOtp_${email}`];
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
 
 
 
