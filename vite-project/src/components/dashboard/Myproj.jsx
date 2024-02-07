@@ -6,7 +6,7 @@ const Myproj = ({ email }) => {
   // const email = client.Email;
   // console.log("projects reached ", email);
 
-  const [reportLink, setreportLink] = useState("");
+
 
   const reportLinkGenerator = async (fileName) => {
     console.log(fileName);
@@ -16,7 +16,8 @@ const Myproj = ({ email }) => {
       );
       const response = await res.json();
       console.log(response);
-      setreportLink(response.url);
+      const generatedReportLink = response.url;
+      return generatedReportLink;
     } catch (error) {
       console.log(error);
     }
@@ -590,104 +591,86 @@ const Myproj = ({ email }) => {
                         padding: "8px 8px",
                       }}
                     >
-                      <p>Projects</p>
-                      <ul>
-                        {FavPro.map((pro, ind) => (
-                          <li
-                            className="Plist"
-                            key={ind}
-                            // title={pro.Description}
-                          >
-                            <h2>{pro.Title}</h2>
-                            <small>
-                              <a
-                                data-bs-toggle="modal"
-                                data-bs-target={`#ProModal-${ind}`}
-                                onClick={() => {
-                                  reportLinkGenerator(pro.File);
-                                  console.log(pro.File);
-                                }}
-                              >
-                                see more
-                              </a>
-                              <span className="mx-auto">
-                                <a
-                                  onClick={() => {
-                                    UnsaveProject(pro.id);
-                                  }}
-                                >
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="16"
-                                    height="16"
-                                    fill="currentColor"
-                                    class="bi bi-trash3-fill"
-                                    viewBox="0 0 16 16"
-                                  >
-                                    <path d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                  </svg>
-                                </a>
-                              </span>
-                            </small>
-                            <div
-                              className="modal fade"
-                              id={`ProModal-${ind}`}
-                              data-bs-backdrop="static"
-                              data-bs-keyboard="false"
-                              tabIndex="-1"
-                              aria-labelledby="staticBackdropLabel"
-                              aria-hidden="true"
-                            >
-                              <div className="modal-dialog">
-                                <div className="modal-content">
-                                  <div className="modal-header">
-                                    <h5
-                                      className="modal-title"
-                                      id="staticBackdropLabel"
-                                    >
-                                      {pro.Title}
-                                    </h5>
-                                    <button
-                                      onClick={() => {
-                                        updateLinkToNull();
-                                      }}
-                                      type="button"
-                                      className="btn-close"
-                                      data-bs-dismiss="modal"
-                                      aria-label="Close"
-                                    ></button>
-                                  </div>
-                                  <div className="modal-body">
-                                    <div className="mb-3">
-                                      <div className="Procont">
-                                        <p>
-                                          Technologies used:
-                                          {pro.tech}
-                                        </p>
-
-                                        <p>About Project:{pro.Description}</p>
-                                        <div>
-                                          <h5>UploadedBy:</h5>
-                                          {pro.UploadedBy}
+                      <div>
+                        <p>Projects</p>
+                        <ul className="list-unstyled">
+                          {FavPro.map((project, index) => (
+                            <div className="ParentBox" key={index}>
+                              <div className="container mt-5 mb-3">
+                                <div className="row">
+                                  <li>
+                                    <div className="col-md-4">
+                                      <div className="card p-3 mb-2">
+                                        <div className="d-flex justify-content-between">
+                                          <div className="d-flex flex-row align-items-center">
+                                            <div className="icon">
+                                              <i className="bx bxl-mailchimp"></i>
+                                            </div>
+                                            <div className="ms-2 c-details">
+                                              <h6 className="mb-0">
+                                                {project.Title}
+                                              </h6>
+                                              <span>{project.UploadedBy}</span>
+                                            </div>
+                                          </div>
+                                          <div className="badge">
+                                            <span>Design</span>
+                                          </div>
                                         </div>
-
-                                        <a href={pro.tget} target="blank">
-                                          get me to Code
-                                        </a>
-                                        <br />
-                                        <a href={reportLink} target="blank">
-                                          View Project Report
-                                        </a>
+                                        <div className="mt-5">
+                                          <h3 className="heading">
+                                            {project.Description}
+                                          </h3>
+                                          <br />
+                                          <h5>Technologies Used:</h5>{" "}
+                                          {project.tech}
+                                          <div className="mt-5">
+                                            <div className="progress">
+                                              <div
+                                                className="progress-bar"
+                                                role="progressbar"
+                                                style={{ width: "50%" }}
+                                                aria-valuenow={70}
+                                                aria-valuemin={0}
+                                                aria-valuemax={100}
+                                              ></div>
+                                            </div>
+                                            <div className="mt-3">
+                                              <a
+                                                href={project.tget}
+                                                target="_blank"
+                                              >
+                                                Get code
+                                              </a>
+                                              &nbsp; &nbsp;
+                                              <a
+                                                onClick={async () => {
+                                                  console.log(project.File);
+                                                  const generatedReportLink =
+                                                    await reportLinkGenerator(
+                                                      project.File
+                                                    );
+                                                  window.open(
+                                                    generatedReportLink,
+                                                    "_blank"
+                                                  );
+                                                }}
+                                              >
+                                                Project Report
+                                              </a>
+                                            </div>
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className="modal-footer"></div>
+                                  </li>
                                 </div>
                               </div>
                             </div>
-                          </li>
-                        ))}
-                      </ul>
+                          ))}
+                        </ul>
+                      </div>
+
                       <br />
                       <br />
                       <br />

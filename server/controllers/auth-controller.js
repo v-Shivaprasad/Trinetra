@@ -7,7 +7,6 @@ const Alerts = require('../models/Alerts-model');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const session = require('express-session');
 require('dotenv').config();
 const key = process.env.APP_PASSWORD;
 const YOUR_EMAIL = process.env.EMAIL;
