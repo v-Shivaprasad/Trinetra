@@ -52,29 +52,43 @@ router.post('/uploadProjects', upload.single('File'), async (req, res) => {
       Email: req.body.Email,
       InstitutionName: req.body.InstitutionName,
       File: {
-                fileName: fileName,
-                filePath: `gs://${bucket.name}/${fileName}`, },
+        fileName: fileName,
+        filePath: `gs://${bucket.name}/${fileName}`,
+      },
     });
 
-    const result = await proj.save(); 
-   
+    const result = await proj.save();
+
     const file = bucket.file(fileName);
     await file.save(fileBuffer);
 
     res.status(201).json(result);
   } catch (error) {
     console.error(error);
+
     if (error.code === 'LIMIT_FILE_SIZE') {
-      res.status(400).json({ error: 'File size exceeds the limit' });
-    } else if (error.name === 'ValidationError') {
-      res.status(400).json({ error: 'Validation Error', validationErrors: error.errors });
-    } else if (error.code === 11000) {
-      res.status(400).json({ error: 'Duplicate key error', keyValue: error.keyValue });
-    } else {
-      res.status(500).json({ error: 'Internal Server Error' });
+      return res.status(400).json({ error: 'File size exceeds the limit' });
     }
+
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: 'Validation Error', validationErrors: error.errors });
+    }
+
+    if (error.code === 11000) {
+      if (error.keyPattern && error.keyPattern.ProjectName) {
+        return res.status(400).json({ error: 'Choose a different Project name', keyValue: error.keyValue });
+      }
+
+      if (error.keyPattern && error.keyPattern.Link) {
+        // Custom response for duplicate key error on Link
+        return res.status(400).json({ error: 'Project with this Link already exists', keyValue: error.keyValue });
+      }
+    }
+
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 
 

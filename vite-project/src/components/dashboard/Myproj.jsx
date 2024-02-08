@@ -6,271 +6,286 @@ const Myproj = ({ email }) => {
   // const email = client.Email;
   // console.log("projects reached ", email);
 
+ const [uploaded, setuploaded] = useState(false);
+ const [updated, setupdated] = useState(false);
+ const reportLinkGenerator = async (fileName) => {
+   console.log(fileName);
+   try {
+     const res = await fetch(
+       `http://localhost:3001/api/reportLinkGenerator?fileName=${fileName}`
+     );
+     const response = await res.json();
+     console.log(response);
+     const generatedReportLink = response.url;
+     return generatedReportLink;
+   } catch (error) {
+     console.log(error);
+   }
+ };
 
+ if (email === null) {
+   return <p>Loadingggg</p>;
+ }
+ // const Email = { email };
+ // console.log(Email);
+ const [clgName, setclgName] = useState("");
 
-  const reportLinkGenerator = async (fileName) => {
-    console.log(fileName);
-    try {
-      const res = await fetch(
-        `http://localhost:3001/api/reportLinkGenerator?fileName=${fileName}`
-      );
-      const response = await res.json();
-      console.log(response);
-      const generatedReportLink = response.url;
-      return generatedReportLink;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+ const InstName = async () => {
+   try {
+     const profile = await fetch(
+       `http://localhost:3001/api/FindProfile?email=${email}`
+     );
+     const details = await profile.json();
+     console.table(details);
+     const Inst = await details.Profile.institution;
+     setclgName(Inst);
+     console.log(clgName);
+   } catch (error) {
+     console.error(error);
+   }
+ };
 
-  if (email === null) {
-    return <p>Loadingggg</p>;
-  }
-  // const Email = { email };
-  // console.log(Email);
-  const [clgName, setclgName] = useState("");
+ const [Prolist, setProlist] = useState([]);
+ const [FavPro, setFavPro] = useState([]);
 
-  const InstName = async () => {
-    try {
-      const profile = await fetch(
-        `http://localhost:3001/api/FindProfile?email=${email}`
-      );
-      const details = await profile.json();
-      console.table(details);
-      const Inst = await details.Profile.institution;
-      setclgName(Inst);
-      console.log(clgName);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+ const getFav = async () => {
+   const result = await fetch(
+     `http://localhost:3001/api/GetFav?email=${email}`
+   );
+   if (result.ok) {
+     const respo = await result.json();
+     console.table(respo);
+     return respo;
+   } else {
+     const err = await result;
+     console.error(err);
+   }
+ };
 
-  const [Prolist, setProlist] = useState([]);
-  const [FavPro, setFavPro] = useState([]);
+ const [UpdatedProject, setUpdatedProject] = useState({
+   Title: "",
+   Tech: "",
+   Description: "",
+   Link: "",
+ });
+ const [updateTitle, setUpdateTitle] = useState("");
+ const [updateTech, setUpdateTech] = useState("");
+ const [updateDescription, setUpdateDescription] = useState("");
+ const [updateLink, setUpdateLink] = useState("");
 
-  const getFav = async () => {
-    const result = await fetch(
-      `http://localhost:3001/api/GetFav?email=${email}`
-    );
-    if (result.ok) {
-      const respo = await result.json();
-      console.table(respo);
-      return respo;
-    } else {
-      const err = await result;
-      console.error(err);
-    }
-  };
+ const handleUpdate = async (id) => {
+   console.log(id);
+   // Create an object to store the updated fields
+   const updatedFields = {};
 
-  const [UpdatedProject, setUpdatedProject] = useState({
-    Title: "",
-    Tech: "",
-    Description: "",
-    Link: "",
-  });
-  const [updateTitle, setUpdateTitle] = useState("");
-  const [updateTech, setUpdateTech] = useState("");
-  const [updateDescription, setUpdateDescription] = useState("");
-  const [updateLink, setUpdateLink] = useState("");
+   // Check and update each field individually
+   if (updateTitle !== "") {
+     updatedFields.Title = updateTitle;
+   }
 
-  const handleUpdate = async (id) => {
-    console.log(id);
-    // Create an object to store the updated fields
-    const updatedFields = {};
+   if (updateTech !== "") {
+     updatedFields.Tech = updateTech;
+   }
 
-    // Check and update each field individually
-    if (updateTitle !== "") {
-      updatedFields.Title = updateTitle;
-    }
+   if (updateDescription !== "") {
+     updatedFields.Description = updateDescription;
+   }
 
-    if (updateTech !== "") {
-      updatedFields.Tech = updateTech;
-    }
+   if (updateLink !== "") {
+     updatedFields.Link = updateLink;
+   }
 
-    if (updateDescription !== "") {
-      updatedFields.Description = updateDescription;
-    }
+   // Update the state with the non-null and changed fields
+   setUpdatedProject((prevUpdatedProject) => ({
+     ...prevUpdatedProject,
+     ...updatedFields,
+   }));
 
-    if (updateLink !== "") {
-      updatedFields.Link = updateLink;
-    }
+   console.log(updatedFields);
+   if (Object.keys(updatedFields).length === 0) {
+     return;
+   }
 
-    // Update the state with the non-null and changed fields
-    setUpdatedProject((prevUpdatedProject) => ({
-      ...prevUpdatedProject,
-      ...updatedFields,
-    }));
+   try {
+     const response = await fetch(
+       "http://localhost:3001/api/UpdateProjectfields",
+       {
+         method: "POST",
+         headers: {
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({ id, updatedFields }),
+       }
+     );
+     console.log(response);
+     if (response.ok) {
+       document.getElementById("UpdateModalClose").click();
+       setupdated(true);
+     } else {
+       console.error("Error updating project fields:", response.status);
+     }
+   } catch (error) {
+     console.error("Error during fetch:", error);
+   }
+ };
+ const [proj, setProj] = useState({
+   Name: "",
+   Tech: "",
+   Description: "",
+   Link: "",
+   Email: email,
+   InstitutionName: clgName,
+ });
+ const [File, setFile] = useState(null);
+ const handleFileChange = (e) => {
+   const file = e.target.files[0];
+   setFile(file);
+ };
+ const handleChange = (e) => {
+   const { id, value } = e.target;
+   setProj((prevProj) => ({
+     ...prevProj,
+     [id]: value,
+     InstitutionName: clgName,
+   }));
+ };
 
-    console.log(updatedFields);
-    if (Object.keys(updatedFields).length === 0) {
-      return;
-    }
+ //Unsaving Project
 
-    try {
-      const response = await fetch(
-        "http://localhost:3001/api/UpdateProjectfields",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id, updatedFields }),
-        }
-      );
-      console.log(response);
-      if (response.ok) {
-        document.getElementById("UpdateModalClose").click();
-      } else {
-        console.error("Error updating project fields:", response.status);
-      }
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    }
-  };
-  const [proj, setProj] = useState({
-    Name: "",
-    Tech: "",
-    Description: "",
-    Link: "",
-    Email: email,
-    InstitutionName: clgName,
-  });
-  const [File, setFile] = useState(null);
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    setFile(file);
-  };
-  const handleChange = (e) => {
-    const { id, value } = e.target;
-    setProj((prevProj) => ({
-      ...prevProj,
-      [id]: value,
-      InstitutionName: clgName,
-    }));
-  };
+ const UnsaveProject = async (id) => {
+   try {
+     console.log(id);
+     const response = await fetch("http://localhost:3001/api/removeSavedPro", {
+       method: "POST",
+       headers: {
+         "Content-Type": "application/json",
+       },
+       body: JSON.stringify({ id, email }),
+     });
 
-  //Unsaving Project
+     if (response.ok) {
+       console.log("deleted");
+     }
+   } catch (error) {
+     console.log(error);
+   }
+ };
+ const handleSubmit = async (e) => {
+   e.preventDefault();
 
-  const UnsaveProject = async (id) => {
-    try {
-      console.log(id);
-      const response = await fetch("http://localhost:3001/api/removeSavedPro", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id, email }),
-      });
+   try {
+     const formData = new FormData();
+     formData.append("Name", proj.Name);
+     formData.append("Tech", proj.Tech);
+     formData.append("Description", proj.Description);
+     formData.append("Link", proj.Link);
+     formData.append("Email", proj.Email);
+     formData.append("InstitutionName", proj.InstitutionName);
+     formData.append("File", File);
 
-      if (response.ok) {
-        console.log("deleted");
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    console.table(proj);
-    try {
-      const formData = new FormData();
-      formData.append("Name", proj.Name);
-      formData.append("Tech", proj.Tech);
-      formData.append("Description", proj.Description);
-      formData.append("Link", proj.Link);
-      formData.append("Email", proj.Email);
-      formData.append("InstitutionName", proj.InstitutionName);
-      formData.append("File", File);
-      console.log(formData);
+     const ProjectResp = await fetch(
+       "http://localhost:3001/api/uploadProjects",
+       {
+         method: "POST",
+         body: formData,
+       }
+     );
 
-      const ProjectResp = await fetch(
-        "http://localhost:3001/api/uploadProjects",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-      console.log(formData);
+     if (ProjectResp.ok) {
+       setProj({
+         Name: "",
+         Tech: "",
+         Description: "",
+         Link: "",
+         InstitutionName: clgName,
+         Email: email,
+       });
+       setuploaded(true);
+       alert("Project uploaded successfully");
+     } else {
+       const errorResponse = await ProjectResp.json();
+       if (errorResponse.error === "Project with this Link already exists") {
+         window.alert(
+           "Project with this Link already exists. Please choose a different Link."
+         );
+       } else if (errorResponse.error === "Choose a different Project name") {
+         alert(errorResponse.error);
+       } else {
+         console.error(errorResponse.error);
+       }
+     }
+   } catch (error) {
+     console.error(error);
+   }
+ };
 
-      if (ProjectResp.ok) {
-        // const resp = await ProjectResp.json();
-        setProj({
-          Name: "",
-          Tech: "",
-          Description: "",
-          Link: "",
-          InstitutionName: clgName,
-          Email: email,
-        });
+ const FetchUploadedProjects = async () => {
+   try {
+     const proRes = await fetch(
+       `http://localhost:3001/api/UploadedProjects?email=${email}`
+     );
+     const resp = await proRes.json();
+     console.table(resp);
+     return resp;
+   } catch (error) {
+     console.log(error);
+   }
+ };
 
-        // console.table(resp);
-        FetchUploadedProjects();
-      } else {
-        const err = await ProjectResp;
-        console.error(err);
-      }
-    } catch (d) {
-      console.log(d);
-    }
-  };
+ const fetchData = async () => {
+   try {
+     const projects = await FetchUploadedProjects();
+     console.table(projects);
+     const modifiedList = projects.map((project) => ({
+       Title: project.ProjectName,
+       tget: project.Link,
+       Description: project.Description,
+       tech: project.Technology,
+       Email: project.Email,
+       File: project.File.fileName,
+       id: project._id,
+     }));
+     console.log(modifiedList);
+     setProlist(modifiedList);
+     const Favproj = await getFav();
+     console.log(Favproj);
+     const modifiedFavList = Favproj.favoriteProjects.map((project) => ({
+       Title: project._id.ProjectName,
+       tget: project._id.Link,
+       Description: project._id.Description,
+       tech: project._id.Technology,
+       UploadedBy: project._id.Email,
+       File: project._id.File.fileName,
+       id: project._id._id,
+     }));
+     // console.log(modifiedFavList);
+     setFavPro(modifiedFavList);
+     // console.table(FavPro);
+   } catch (error) {
+     console.error(error);
+   }
+ };
+ //  const updateLinkToNull = (e) => {
+ //    setreportLink(" ");
+ //    console.log(reportLink);
+ //  };
 
-  const FetchUploadedProjects = async () => {
-    try {
-      const proRes = await fetch(
-        `http://localhost:3001/api/UploadedProjects?email=${email}`
-      );
-      const resp = await proRes.json();
-      console.table(resp);
-      return resp;
-    } catch (error) {
-      console.log(error);
-    }
-  };
+ useEffect(() => {
+   if (email) {
+     fetchData();
+     InstName();
+   }
+ }, [email]);
 
-  const fetchData = async () => {
-    try {
-      const projects = await FetchUploadedProjects();
-      console.table(projects);
-      const modifiedList = projects.map((project) => ({
-        Title: project.ProjectName,
-        tget: project.Link,
-        Description: project.Description,
-        tech: project.Technology,
-        Email: project.Email,
-        File: project.File.fileName,
-        id: project._id,
-      }));
-      console.log(modifiedList);
-      setProlist(modifiedList);
-      const Favproj = await getFav();
-      console.log(Favproj);
-      const modifiedFavList = Favproj.favoriteProjects.map((project) => ({
-        Title: project._id.ProjectName,
-        tget: project._id.Link,
-        Description: project._id.Description,
-        tech: project._id.Technology,
-        UploadedBy: project._id.Email,
-        File: project._id.File.fileName,
-        id: project._id._id,
-      }));
-      // console.log(modifiedFavList);
-      setFavPro(modifiedFavList);
-      // console.table(FavPro);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  const updateLinkToNull = (e) => {
-    setreportLink(" ");
-    console.log(reportLink);
-  };
+ useEffect(() => {
+   if (updated) {
+     fetchData();
+   }
+ }, [updated]);
 
-  useEffect(() => {
-    if (email) {
-      fetchData();
-      InstName();
-    }
-  }, [email]);
+ useEffect(() => {
+   fetchData();
+ }, [uploaded]);
 
   return (
     <>
