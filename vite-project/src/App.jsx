@@ -37,6 +37,9 @@ const App = () => {
         }
       } catch (error) {
         console.log(error);
+        setTrueLogin(false);
+        sessionStorage.removeItem("token");
+        setToken(null);
       }
     };
 

@@ -4,23 +4,20 @@ const Projects = ({ email }) => {
   const [Pro, setPro] = useState([]);
 
   const [searchInput, setSearchInput] = useState("");
-  const [reportLink, setreportLink] = useState("");
   const reportLinkGenerator = async (fileName) => {
     try {
       const res = await fetch(
         `http://localhost:3001/api/reportLinkGenerator?fileName=${fileName}`
       );
       const response = await res.json();
-      await setreportLink(response.url);
       const generatedReportLink = response.url;
       return generatedReportLink;
-      console.log(response);
     } catch (error) {
       console.log(error);
     }
   };
+  const [saved, setSaved] = useState(false);
 
-  const [likedProjects, setlikedProjects] = useState([]);
   const [Favorites, setFavorites] = useState([]);
   const getFav = async () => {
     const result = await fetch(
@@ -53,7 +50,12 @@ const Projects = ({ email }) => {
   useEffect(() => {
     getFav();
   }, []); // Empty dependency array ensures it runs only once after mount
-
+  useEffect(() => {
+    if (saved) {
+      getFav();
+      setSaved(false);
+    }
+  }, [saved]);
   const Projs = async () => {
     try {
       const respo = await fetch("http://localhost:3001/api/FindAllProjects");
@@ -148,13 +150,15 @@ const Projects = ({ email }) => {
         },
         body: JSON.stringify(savedPro),
       });
+
       console.log(savedPro);
       // Handle the response here (e.g., show a success message or handle errors)
       const result = await resp.json();
+      if (resp.ok) {
+        setSaved(true);
+      }
       console.log(result);
     } catch (error) {
-      console.log(savedPro);
-
       console.error(error);
       // Handle errors here (e.g., show an error message to the user)
     }
@@ -205,8 +209,45 @@ const Projects = ({ email }) => {
                               </div>
                             </div>
                             <div className="badge">
-                              {" "}
-                              <span>Design</span>{" "}
+                              <span>
+                                {email !== project.Email ? (
+                                  Favorites.some(
+                                    (fav) => fav.id === project._id
+                                  ) ? (
+                                    <a>
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        fill="currentColor"
+                                        class="bi bi-bookmarks-fill"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5z" />
+                                        <path d="M4.268 1A2 2 0 0 1 6 0h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L13 13.768V2a1 1 0 0 0-1-1z" />
+                                      </svg>{" "}
+                                    </a>
+                                  ) : (
+                                    <a
+                                      onClick={() => {
+                                        SavePro(project);
+                                      }}
+                                    >
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="16"
+                                        height="16"
+                                        fill="currentColor"
+                                        class="bi bi-bookmarks"
+                                        viewBox="0 0 16 16"
+                                      >
+                                        <path d="M2 4a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v11.5a.5.5 0 0 1-.777.416L7 13.101l-4.223 2.815A.5.5 0 0 1 2 15.5zm2-1a1 1 0 0 0-1 1v10.566l3.723-2.482a.5.5 0 0 1 .554 0L11 14.566V4a1 1 0 0 0-1-1z" />
+                                        <path d="M4.268 1H12a1 1 0 0 1 1 1v11.768l.223.148A.5.5 0 0 0 14 13.5V2a2 2 0 0 0-2-2H6a2 2 0 0 0-1.732 1" />
+                                      </svg>{" "}
+                                    </a>
+                                  )
+                                ) : null}
+                              </span>
                             </div>
                           </div>
                           <div className="mt-5">

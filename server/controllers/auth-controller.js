@@ -239,6 +239,7 @@ router.get('/FindProfile', async (req, res) => {
 //Retrieve favorites in dasboard save Earlier
 router.get('/GetFav', async (req, res) => {
   try {
+    
     const userSavedData = await savedPro.findOne({ userEmail: req.query.email }).populate('SavedPro._id');
     // console.log(userSavedData);
     if (!userSavedData) {
@@ -254,6 +255,7 @@ router.get('/GetFav', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
 
 //Save the Projects in the dashboard
 router.post('/savedPro', async (req, res) => {
@@ -280,7 +282,7 @@ router.post('/savedPro', async (req, res) => {
         // If it's not saved, push the new project into the SavedPro array
         userSaved.SavedPro.push({ _id: project._id });
         await userSaved.save();
-        res.status(200).json({ message: 'Project added to existing userSaved document' });
+        res.status(200).json({ message: 'Project added to existing userSaved document' ,ok:true});
       } else {
         // If it's already saved, you might want to send a different response
         res.status(200).json({ message: 'Project already saved for the user' });
