@@ -122,3 +122,8 @@ body {
   display: flex;
   flex-direction: row;
 }
+.projectFooter{
+  display: flex;
+  flex-direction:row;
+  justify-content:space-between;
+}
