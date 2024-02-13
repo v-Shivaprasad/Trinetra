@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const User = require('../models/user-model');
 const Proj = require('../models/Project-model');
 const savedPro = require('../models/userSaved-model');
+const LikedProject = require('../models/LikedProjects-model');
 const Alerts = require('../models/Alerts-model');
 const mongoose = require('mongoose');
 const jwt = require('jsonwebtoken');
@@ -302,6 +303,81 @@ router.post('/savedPro', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+//Get Liked Projects
+router.get('/FindLikedProjects',async(req,res) =>{
+  try {
+    const email = req.query.email;
+    const userLikedProject = await LikedProject.findOne({userEmail:email});
+    if(!userLikedProject){
+      return res.status(404).json("User did not save projects till now")
+    }
+    const Liked = userLikedProject.likedPro;
+    res.status(200).json({Liked})
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({error:"Internal Server Error"});
+  }
+})
+
+//Post Liked Projects
+router.post('/like-project', async (req, res) => {
+  try {
+    const { email, project, action } = req.body;
+
+    // Find the project by its ID
+    const existingProject = await Proj.findById({ _id: project._id });
+
+    if (!existingProject) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Check if the user has already liked the project
+    const userLikedProject = await LikedProject.findOne({ userEmail: email });
+
+    if (userLikedProject) {
+      const isLiked = userLikedProject.likedPro.some(likedProject => likedProject._id.equals(existingProject._id));
+
+      if (action === 'like') {
+        if (!isLiked) {
+          userLikedProject.likedPro.push({ _id: existingProject._id });
+          await existingProject.incrementLikes(email);
+          await userLikedProject.save();
+          return res.status(200).json({ message: 'Project liked successfully' });
+        } else {
+          return res.status(409).json({ message: 'Project already liked by the user' });
+        }
+      } else if (action === 'unlike') {
+        if (isLiked) {
+          await userLikedProject.removeProject(existingProject._id);
+          await existingProject.removeUserLike(email);
+          await existingProject.decrementLikes();
+          return res.status(200).json({ message: 'Project unliked successfully' });
+        } else {
+          return res.status(409).json({ message: 'Project not liked by the user' });
+        }
+      } else {
+        return res.status(400).json({ error: 'Invalid action parameter' });
+      }
+    } else {
+      if (action === 'like') {
+        const newUserLiked = new LikedProject({
+          userEmail: email,
+          likedPro: [{ _id: existingProject._id }],
+        });
+
+        await newUserLiked.save();
+        await existingProject.incrementLikes();
+        return res.status(200).json({ message: 'Project liked successfully' });
+      } else {
+        return res.status(409).json({ message: 'Project not liked by the user' });
+      }
+    }
+  } catch (error) {
+    console.error('Error processing like/unlike:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 
 
@@ -356,7 +432,7 @@ router.get('/ValidateToken', async (req, res) => {
     res.status(200).json({ validToken: true, decoded: verified });
     }
     else{
-      sessionStorage.removetem("token");
+      localStorage.removetem("token");
     }
     
 
@@ -421,15 +497,18 @@ router.post('/UpdateProjectfields', async (req, res) => {
 // Generate pdf Link from Firebase
 router.get('/reportLinkGenerator', async (req, res) => {
   try {
+
     const fileName = req.query.fileName;
+    const resp = await Proj.findOne({"File.fileName": fileName});
+    console.log(fileName, resp);
+    if(!resp) {
+    return  res.status(404).send("No such file exists!!");
+    }
     const [signedUrl] = await storage.bucket().file(fileName).getSignedUrl({
       action: 'read',
       expires: Date.now() + 60 * 60 * 1000, // Link expires in 1 hour
     });
-
-
-    // Send the signed URL in the response
-    res.json({ url: signedUrl });
+    res.status(200).json({ url: signedUrl });
   } catch (error) {
     console.error('Error generating signed URL:', error);
     res.status(500).json({ error: 'Internal server error' });

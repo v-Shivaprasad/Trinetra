@@ -11,12 +11,12 @@ import Dash from "./components/dashboard/dash";
 const App = () => {
   const [TrueLogin, setTrueLogin] = useState(false);
   const [email, setemail] = useState("");
-  const [Token, setToken] = useState(sessionStorage.getItem("token"));
+  const [Token, setToken] = useState(localStorage.getItem("token"));
 
   useEffect(() => {
-    // const token = sessionStorage.getItem("token");
+    // const token = localStorage.getItem("token");
 
-    const islogin = sessionStorage.getItem("Trueshow");
+    const islogin = localStorage.getItem("Trueshow");
 
     const validate = async (Token, islogin) => {
       try {
@@ -32,13 +32,13 @@ const App = () => {
           setTrueLogin(true);
         } else {
           setTrueLogin(false);
-          sessionStorage.removeItem("token");
+          localStorage.removeItem("token");
           setToken(null);
         }
       } catch (error) {
         console.log(error);
         setTrueLogin(false);
-        sessionStorage.removeItem("token");
+        localStorage.removeItem("token");
         setToken(null);
       }
     };
@@ -51,8 +51,8 @@ const App = () => {
     //     validate(token, islogin);
     //     return prevTrueLogin; // Keep the current state value until the new state is determined
     //   } else {
-    //     sessionStorage.removeItem("token");
-    //     sessionStorage.removeItem("Trueshow");
+    //     localStorage.removeItem("token");
+    //     localStorage.removeItem("Trueshow");
     //     return false;
     //   }
     // });

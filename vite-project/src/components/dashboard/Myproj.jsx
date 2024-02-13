@@ -345,7 +345,7 @@ return (
                   style={{
                     border: "black",
                     borderStyle: "solid",
-                    maxHeight: "480px",
+                    maxHeight: "95vh",
                     overflowY: "auto",
                     padding: "8px 8px",
                   }}

@@ -9,20 +9,20 @@ import Dnav from "./dnav";
 
 const Dash = () => {
   // const [email, setemail] = useState("");
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const navigate = useNavigate();
   const [rend, setrend] = useState();
   console.log("dash");
   const { islogin, setislogin, setshowbtn } = useAuth();
   const [email, setemail] = useState("");
   const logout = () => {
-    sessionStorage.removeItem("token");
-    sessionStorage.setItem("Trueshow", false);
+    localStorage.removeItem("token");
+    localStorage.setItem("Trueshow", false);
     navigate("/");
   };
   console.log(token);
   if (!token) {
-    sessionStorage.setItem("Trueshow", false);
+    localStorage.setItem("Trueshow", false);
   }
 
   useEffect(() => {
@@ -44,8 +44,8 @@ const Dash = () => {
     if (token) {
       validate(token);
     } else {
-      sessionStorage.setItem("Trueshow", false);
-      sessionStorage.removeItem("token");
+      localStorage.setItem("Trueshow", false);
+      localStorage.removeItem("token");
       logout(); // Use the logout function from useAuth
       navigate("/");
     }
@@ -59,7 +59,7 @@ const Dash = () => {
   useEffect(() => {
     if (email === null) {
       logout();
-      sessionStorage.removeItem("token");
+      localStorage.removeItem("token");
       setislogin(false);
       navigate("/");
     }

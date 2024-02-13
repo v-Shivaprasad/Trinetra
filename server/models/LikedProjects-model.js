@@ -14,5 +14,15 @@ const likedProjectSchema = new mongoose.Schema({
   }],
 });
 
+likedProjectSchema.methods.removeProject = async function (projectId) {
+  try {
+    this.likedPro = this.likedPro.filter(project => !project._id.equals(projectId));
+    await this.save();
+  } catch (error) {
+    console.error('Error removing project from likedPro:', error);
+    throw error;
+  }
+};
+
 const LikedProject = mongoose.model('LikedProject', likedProjectSchema);
 module.exports = LikedProject;

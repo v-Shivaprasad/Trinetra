@@ -11,7 +11,7 @@ import "../homepage/navbar.css";
 
 const Navbar = ({ navLinks, modalOps, svgcolor }) => {
   const { showbtn, setshowbtn } = useAuth();
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   if (token) {
     setshowbtn(true);
   } else {
@@ -219,7 +219,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
     <>
       <nav
         className="navbar fixed-top navbar-expand-lg navbar-light bg-light-subtle"
-        style={{ padding: "0px 16px" }}
+        style={{ padding: "0px 16px", minWidth: "100%" }}
       >
         <a className="navbar-brand" href="#">
           <img
@@ -306,11 +306,15 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
               </button>
 
               <ul
-                className="dropdown-menu"
+                className={`dropdown-menu modalmenu ${
+                  window.innerWidth <= 767
+                    ? "dropdown-menu-start"
+                    : "dropdown-menu-end"
+                }`}
                 aria-labelledby="dropdownMenuLink"
-                style={{
-                  paddingRight: "25px",
-                }}
+                // style={{
+                //   left: "0", // Adjust this value as needed
+                // }}
               >
                 {modalOps.map((link, index) => (
                   <li key={index}>

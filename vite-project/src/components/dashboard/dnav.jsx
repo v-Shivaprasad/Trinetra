@@ -8,10 +8,10 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
   const { islogin, setislogin, client, setclient } = useAuth();
   // const [email, setemail] = useState(" ");
   const navigate = useNavigate();
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   if (!token) {
     useEffect(() => {
-      sessionStorage.setItem("Trueshow", false);
+      localStorage.setItem("Trueshow", false);
       navigate("/");
     }, [navigate]);
   }

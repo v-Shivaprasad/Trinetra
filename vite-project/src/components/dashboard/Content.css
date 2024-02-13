@@ -1,7 +1,8 @@
 .Projfol {
   background-color: #eee;
   padding: 0px 30px;
-  height: 100vh;
+  height: 150vh;
+  max-height:120vh;
   display: flex;
   flex-direction: column;
   /* align-items: center; */

@@ -5,11 +5,11 @@ const AuthManage = createContext();
 export const AuthProvider = ({ children }) => {
   const [islogin, setislogin] = useState(false);
 
-  const [token, settoken] = useState(sessionStorage.getItem("token"));
+  const [token, settoken] = useState(localStorage.getItem("token"));
   const [showbtn, setshowbtn] = useState(false);
 
   const storetoken = (token) => {
-    return sessionStorage.setItem("token", token);
+    return localStorage.setItem("token", token);
   };
 
   return (

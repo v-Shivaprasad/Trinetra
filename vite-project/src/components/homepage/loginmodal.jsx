@@ -52,7 +52,7 @@ const Loginmodal = () => {
         console.log(token);
         setislogin(true);
         console.log(islogin);
-        sessionStorage.setItem("Trueshow", true);
+        localStorage.setItem("Trueshow", true);
         setshowbtn(true);
         storetoken(token);
         const email = login.logemail;

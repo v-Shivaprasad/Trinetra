@@ -1,5 +1,24 @@
-.cfooter{
-  background-color: antiquewhite;
-  width: 100vw;
+/* Example CSS for Footer */
+
+footer {
+  background-color: #fff; /* Dark background color for the footer */
+  color: #fff; /* White text color */
+  padding: 20px;
+  text-align: center;
+}
+
+.footer-content {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.social-icons a {
+  color: #fff;
+  margin-left: 10px;
+  font-size: 20px;
+}
+
+.social-icons a:hover {
+  color: #007bff; /* Blue color on hover */
 }

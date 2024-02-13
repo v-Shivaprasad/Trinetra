@@ -4,9 +4,10 @@ import Aboutus from "./aboutus";
 import CarouselCard from "./CarouselCard";
 import Footer from "./footer";
 import React from "react";
+import CodeathonComp from "./CodeathonComp";
 
 const homemain = () => {
-  const token = sessionStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const navLinks = [
     { id: "AboutUs", text: "About Us", navfun: () => {} },
     { id: "Projects", text: "Projects", navfun: () => {} },
@@ -38,6 +39,8 @@ const homemain = () => {
       <br />
       <CarouselCard />
       <br />
+
+      <CodeathonComp />
       <br />
       <Footer />
     </>

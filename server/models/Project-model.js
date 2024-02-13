@@ -50,12 +50,11 @@ LikedBy: {
 
 });
 
-ProjSchema.methods.hasUserLiked = function (userEmail) {
-    return this.LikedBy.includes(userEmail);
-};
 
-ProjSchema.methods.incrementLikes = async function () {
+
+ProjSchema.methods.incrementLikes = async function (userEmail) {
     this.Likes += 1;
+    this.LikedBy.push(userEmail);
     await this.save();
 };
 
@@ -63,6 +62,10 @@ ProjSchema.methods.decrementLikes = async function(){
     this.Likes -= 1;
     await this.save();
 }
+ProjSchema.methods.removeUserLike = async function (userEmail) {
+    this.LikedBy = this.LikedBy.filter(email => email !== userEmail);
+    await this.save();
+};
 
 const Proj = mongoose.model('Proj', ProjSchema);
 
