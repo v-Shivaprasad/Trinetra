@@ -101,14 +101,7 @@ body {
   align-items: center;
 }
 
-.progress {
-  height: 10px;
-  border-radius: 10px;
-}
 
-.progress div {
-  background-color: red;
-}
 
 .text1 {
   font-size: 14px;
@@ -126,5 +119,7 @@ body {
 .projectFooter{
   display: flex;
   flex-direction:row;
-  justify-content:space-between;
+  /* justify-content:space-between; */
 }
+
+

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import ProgressBar from "./ProgressBar";
 const LIKE_ACTION = "like";
 const UNLIKE_ACTION = "unlike";
 const Projects = ({ email }) => {
@@ -208,6 +209,44 @@ const Projects = ({ email }) => {
     }
   };
 
+  const [languages, setLanguages] = useState([]);
+  useEffect(() => {
+    const repoUrl =
+      "https://api.github.com/repos/machadop1407/Musical-Chat-Frontend"; // Replace with your dynamic repo URL
+
+    const fetchRepoLanguages = async () => {
+      try {
+        // Fetch repository information
+        const response = await fetch(repoUrl);
+        const data = await response.json();
+
+        // Fetch languages information
+        const languagesResponse = await fetch(data.languages_url);
+        const languagesData = await languagesResponse.json();
+
+        // Extract and set languages with percentage
+        if (languagesData) {
+          const totalSize = Object.values(languagesData).reduce(
+            (acc, size) => acc + size,
+            0
+          );
+          const languagesWithPercentage = Object.entries(languagesData).map(
+            ([language, size]) => ({
+              language,
+              percentage: (size / totalSize) * 100,
+            })
+          );
+          setLanguages(languagesWithPercentage);
+          console.log(languages);
+        }
+      } catch (error) {
+        console.error("Error fetching repo languages:", error);
+      }
+    };
+
+    fetchRepoLanguages();
+  }, []);
+
   return (
     <div className="DashContent">
       <div className="Projfol">
@@ -300,15 +339,9 @@ const Projects = ({ email }) => {
                             <h5>Technologies Used:</h5> {project.Technology}
                             <div className="mt-5">
                               <div className="progress">
-                                <div
-                                  className="progress-bar"
-                                  role="progressbar"
-                                  style={{ width: "50%" }}
-                                  value={70}
-                                  aria-valuenow={70}
-                                  aria-valuemin={0}
-                                  aria-valuemax={100}
-                                ></div>
+                                {languages.map((lang) => (
+                                  <ProgressBar languages={lang} />
+                                ))}
                               </div>
 
                               {/* <div className="mt-3"> */}
@@ -380,7 +413,6 @@ const Projects = ({ email }) => {
                                           generatedReportLink,
                                           "_blank"
                                         );
-                                      
                                       }}
                                     >
                                       Project Report
@@ -388,7 +420,6 @@ const Projects = ({ email }) => {
                                   </span>
                                 </div>
                               </div>
-                              {/* </div> */}
                             </div>
                           </div>
                         </div>

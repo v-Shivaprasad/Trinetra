@@ -9,7 +9,7 @@ const Aboutus = () => {
     <div id="AboutUs" style={{ padding: "0px 32px" }}>
       <div>
         {/* Card 1 */}
-        <div className="card-container">
+        <div className="comcard-container">
           <div className="card-header">
             सा विद्या या विमुक्तये Sā vidyā yā vimuktaye
           </div>
@@ -28,7 +28,7 @@ const Aboutus = () => {
         </div>
 
         {/* Card 2 */}
-        <div className="card-container">
+        <div className="comcard-container">
           <div className="card-header">
             <h3 className="text-white">ABOUT US!</h3>
           </div>

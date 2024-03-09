@@ -41,15 +41,16 @@
   .card2-img,
   .card2-content {
     width: 100%;
+    background-color:white;
   }
 }
 
-.card-container {
+.comcard-container {
   margin-bottom: 20px;
   overflow: hidden;
   border: 1px solid #ccc;
   border-radius: 8px;
-  background: white; /* Set background color to white */
+   background: white; /*Set background color to white */
 }
 
 .card-header {
