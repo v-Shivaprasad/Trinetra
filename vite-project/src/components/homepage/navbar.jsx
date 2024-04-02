@@ -66,6 +66,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
       }));
     }
   };
+  const [showLoader, setShowLoader] = useState(false);
 
   const ShowModalOps = () => {
     setmodopen(!modopen);
@@ -82,6 +83,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
 
   const handleForm = async (e) => {
     e.preventDefault();
+    setShowLoader(true);
     console.log(user);
     if (user.profession !== "") {
       if (user.signpassword === user.conpass) {
@@ -92,6 +94,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           );
 
           if (!emailCheckResponse.ok) {
+            setShowLoader(false);
             const errorData = await emailCheckResponse.json();
             document.getElementById("emailError").innerHTML =
               "Email already exits";
@@ -105,11 +108,14 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
             `http://localhost:3001/api/users/initiateReg?email=${user.signemail}`
           );
           if (!initiateReg.ok) {
+            setShowLoader(false);
             console.log(emailCheckResponse);
             document.getElementById("closebutton").click();
             return; // Stop registration if email check fails
           }
+
           document.getElementById("signupClose").click();
+          setShowLoader(false);
           const Otpmodal = document.getElementById("OTPmodal");
           const otpmodal = new bootstrap.Modal(Otpmodal);
           otpmodal.show();
@@ -117,10 +123,12 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           console.log("Error", error);
         }
       } else {
+        setShowLoader(false);
         document.getElementById("passnomatch").innerHTML =
           "Passwords do not match";
       }
     } else {
+      setShowLoader(false);
       document.getElementById("professionError").innerHTML =
         "This field cannot be left empty";
     }
@@ -129,13 +137,26 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
   const Otpcheck = async (e) => {
     e.preventDefault();
     try {
+      const data = {
+        otp: OTP.otp,
+        email: user.signemail,
+      };
       const otpcheck = await fetch(
-        `http://localhost:3001/api/users/validateOtp?otp=${OTP.otp}`
+        "http://localhost:3001/api/users/validateOtp",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // Add any other headers as needed
+          },
+          body: JSON.stringify(data),
+        }
       );
 
       console.log(otpcheck);
       if (!otpcheck.ok) {
         document.getElementById("otpclose").click();
+        document.getElementById("signupClose").click();
         alert("Otp validation error");
         console.log(otpcheck);
         return;
@@ -215,6 +236,21 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
     document.getElementById("closebutton").click(); // Programmatically click the close button
   };
 
+  const showLoaderOverlay = showLoader ? (
+    <div className="loader-overlay" id="loaderbg">
+      <div
+        className="loader"
+        id="loader"
+        style={{
+          position: "fixed",
+          top: "40%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          zIndex: 200000, // Set a higher z-index
+        }}
+      ></div>
+    </div>
+  ) : null;
   return (
     <>
       <nav
@@ -333,6 +369,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           </div>
         </div>
       </nav>
+      {showLoaderOverlay}
       <div
         className="modal fade"
         id="SignupModal"
@@ -480,6 +517,9 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           </div>
         </div>
       </div>
+      {/* <div class="loader-overlay" id="loaderbg" style={{ display: "none" }}>
+      <div className="loader" id="loader"></div>
+    </div> */}
       <Loginmodal />
       <div
         id="registrationtoast"
@@ -518,7 +558,6 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           credentials! Happy Coding!!!
         </div>
       </div>
-
       <div
         className="modal fade"
         id="OTPmodal"

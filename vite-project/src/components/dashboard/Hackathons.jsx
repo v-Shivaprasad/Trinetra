@@ -1,42 +1,35 @@
 import React, { useEffect, useState } from "react";
 
 const Alerts = () => {
-  const [Alertlist, setAlertlist] = useState([]);
+  const [alertList, setAlertList] = useState([]);
 
-  const GetAlerts = async () => {
+  const getAlerts = async () => {
     try {
-      const respon = await fetch("http://localhost:3001/api/GetAlerts");
-      const data = await respon.json();
+      const response = await fetch("http://localhost:3001/api/GetAlerts");
+      const data = await response.json();
       console.log(data);
-      Modifylist(data);
+      modifyList(data);
     } catch (error) {
       console.log(error);
     }
   };
 
-  const Modifylist = (data) => {
+  const modifyList = (data) => {
     console.log(data);
-    const modlist = data.map((data) => ({
-      Name: data.Title,
-      Description: data.About,
-      tget: data.Link,
+    const modList = data.map((item) => ({
+      name: item.Title,
+      description: item.About,
+      link: item.Link,
     }));
-    setAlertlist(modlist);
-    console.log(modlist);
-    // setAlertlist((prevAlertList) => [
-    //   ...prevAlertList,
-    //   {
-    //     Name: data.Title,
-    //     Description: data.About,
-    //     tget: data.Link,
-    //   },
-    // ]);
+    setAlertList(modList);
+    console.log(modList);
   };
 
   useEffect(() => {
     // Fetch alerts when the component mounts
-    GetAlerts();
+    getAlerts();
   }, []);
+
   return (
     <div className="DashContent">
       <div className="Projfol">
@@ -46,107 +39,46 @@ const Alerts = () => {
           style={{
             border: "black",
             borderStyle: "solid",
-            maxHeight: "480px",
+            maxHeight: "95vh",
             overflowY: "auto",
             padding: "8px 8px",
           }}
         >
           <p>Alerts</p>
           <ul>
-            {Alertlist.map((Alert, ind) => (
-              <li className="Plist" key={ind}>
-                <h2>{Alert.Name}</h2>
-                <small>
-                  <a
-                    data-bs-toggle="modal"
-                    data-bs-target={`#ProjModal-${ind}`}
-                    target="blank"
-                  >
-                    see more
-                  </a>
-                </small>
-                <div
-                  className="modal fade"
-                  id={`ProjModal-${ind}`}
-                  data-bs-backdrop="static"
-                  data-bs-keyboard="false"
-                  tabIndex="-1"
-                  aria-labelledby="staticBackdropLabel"
-                  aria-hidden="true"
-                >
-                  <div className="modal-dialog">
-                    <div className="modal-content">
-                      <div className="modal-header">
-                        <h5 className="modal-title" id="staticBackdropLabel">
-                          {Alert.Name}
-                        </h5>
-                        <button
-                          type="button"
-                          className="btn-close"
-                          data-bs-dismiss="modal"
-                          aria-label="Close"
-                        ></button>
-                      </div>
-                      <div className="modal-body">
-                        <div className="mb-3">
-                          <div className="Procont">
-                            <p>{Alert.Name}</p>
-
-                            <p>Details:{Alert.Description}</p>
-
-                            <a href={Alert.tget} target="blank">
-                              See more
-                            </a>
+            {alertList.map((alert, index) => (
+              <li className="list-unstyled">
+                <div className="ParentBox" key={index}>
+                  <div className="container mt-5 mb-3">
+                    <div className="row">
+                      <div className="col-md-4">
+                        <div className="card p-3 mb-2">
+                          <div className="d-flex justify-content-between">
+                            <div className="d-flex flex-row align-items-center">
+                              <div className="icon">
+                                <i className="bx bxl-mailchimp"></i>
+                              </div>
+                              <div className="ms-2 c-details">
+                                <h6 className="mb-0">{alert.name}</h6>
+                                <span>{alert.description}</span>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="mt-5">
+                            <div className="projectFooter">
+                              <a href={alert.link} target="blank">
+                                See more
+                              </a>
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div className="modal-footer"></div>
                     </div>
                   </div>
                 </div>
               </li>
             ))}
           </ul>
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
-          <br />
           <p>This content should appear at the bottom after you scroll.</p>
         </div>
       </div>

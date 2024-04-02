@@ -1,5 +1,7 @@
 const mongoose = require('mongoose');
 const jwt = require('../node_modules/jsonwebtoken')
+require('dotenv').config();
+const key = process.env.MONGO_KEY
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -24,13 +26,25 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  lastLoggedInDate: {
+    type: Date,
+    default: null,
+  },
+  ProjectsUploaded:{
+    type: Number,
+    default: 0,
+  },
 });
 
-userSchema.methods.generateToken = function () {
+userSchema.methods.generateToken = async function () {
   try {
+    const formattedDate = new Date().toISOString(); // Get current date and time in ISO format
+    this.lastLoggedInDate = formattedDate; // Save formatted date
+    await this.save();
+
     const token = jwt.sign(
-      { userName: this.name, email: this.signemail },
-      'Brahmi_delta_force',
+      { userName: this.name, email: this.signemail, lastLoggedInDate: formattedDate },
+      key,
       { expiresIn: '1h' }
     );
 

@@ -34,7 +34,7 @@ const Aboutus = () => {
           </div>
           <div className="card2-row">
             <div className="card2-img">
-              <img src="assets/logo.jpg" alt="Logo" draggable="false" />
+              <img src={logs} alt="Logo" draggable="false" />
             </div>
             <div className="card2-content">
               <p>

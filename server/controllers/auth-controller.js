@@ -10,11 +10,13 @@ const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
 require('dotenv').config();
 const key = process.env.APP_PASSWORD;
+const Admemail = process.env.Admemail;
+const Admpass = process.env.Admpass;
 const YOUR_EMAIL = process.env.EMAIL;
 const multer = require('multer');
 const path = require('path');
 const admin = require('firebase-admin');
-const serviceAccount = require('../Projects/trinetra-6807b-firebase-adminsdk-gyhqw-8f1ef6c96c.json');
+const serviceAccount = require('../Projects/trinetra-6807b-firebase-adminsdk-gyhqw-b8a3db3650.json');
 const router = express.Router();
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -35,6 +37,7 @@ function getRandom5DigitInt() {
 // // Example: Generate a random 5-digit integer
 
 var otp,Admintoken,RegOtp;
+let otpDict ={}
 const upload = multer({
   storage: multer.memoryStorage(), // Store the file in memory before uploading to Firebase
 });
@@ -59,6 +62,10 @@ router.post('/uploadProjects', upload.single('File'), async (req, res) => {
     });
 
     const result = await proj.save();
+    await User.findOneAndUpdate(
+      { signemail: req.body.Email },
+      { $inc: { ProjectsUploaded: 1 } }
+    );
 
     const file = bucket.file(fileName);
     await file.save(fileBuffer);
@@ -106,7 +113,7 @@ const transporter = nodemailer.createTransport({
 
 router.post('/AdminT1',async (req,res) =>{
   try {
-    if (req.body.Admemail === "velagadaa@gmail.com" && req.body.Admpassword === "Poiuy@09876") {
+    if (req.body.Admemail === Admemail && req.body.Admpassword === Admpass) {
       
       const random5DigitNum = getRandom5DigitInt();
       // Email options
@@ -442,7 +449,18 @@ router.get('/ValidateToken', async (req, res) => {
   }
 });
 
+//fetch USers
+router.get('/FetchUsers',async(req,res) =>{
+  try {
+    const Profiles = await User.find();
+    res.json(Profiles);
+  } catch (error) {
+    res.status(500).send('Internal Server Error'); 
+  }
+})
 
+
+//fetch Projects
 router.get('/FindAllProjects',async(req,res) =>{
   try {
     const Proj = mongoose.model('Proj');
@@ -468,8 +486,8 @@ router.get('/UploadedProjects', async (req, res) => {
 //Update Values in the uploaded Project
 router.post('/UpdateProjectfields', async (req, res) => {
   const { id, updatedFields } = req.body;
-  // console.log(req.body);
-  // console.log('Received request to update project with ID:', id);
+  console.log(req.body);
+  console.log('Received request to update project with ID:', id);
 
   try {
     // Find the project by id and update the fields
@@ -579,7 +597,8 @@ router.get("/users/initiateReg",async (req,res) =>{
       res.status(500).json({ok:false,error:error})
     } else {
       console.log('Email sent:', info.response);
-      RegOtp = genOtp;
+      // RegOtp = genOtp;
+      otpDict[email] = genOtp;
       res.status(201).json({ ok: true });
     }
 
@@ -591,21 +610,28 @@ router.get("/users/initiateReg",async (req,res) =>{
   }
 });
 
-router.get('/users/validateOtp', async (req,res) =>{
+
+router.post('/users/validateOtp', async (req, res) => {
   try {
-    const EnteredOtp = req.query.otp;
-    if(EnteredOtp == RegOtp){
-      res.status(201).json({ok:true});
-      RegOtp = null;
+    console.log(req.body);
+    const enteredOtp = Number(req.body.otp);
+    const userEmail = req.body.email;
+
+    if (!enteredOtp || !userEmail) {
+      return res.status(400).json({ error: 'Missing OTP or email in request body' });
     }
-    else{
-      res.status(400).json({ok:false});
+
+    if (enteredOtp === otpDict[userEmail]) {
+      delete otpDict[userEmail]; // Delete the OTP for this email
+      return res.status(201).json({ ok: true });
+    } else {
+      return res.status(400).json({ ok: false, error: 'Invalid OTP' });
     }
   } catch (error) {
-    console.log("error");
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('Error:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
   }
-})
+});
 
 
 
@@ -653,11 +679,6 @@ router.post('/users/login', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
-
-
-
-
-
 
 
 module.exports = router;

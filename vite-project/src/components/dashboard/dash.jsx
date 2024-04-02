@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import Myproj from "./Myproj";
 import Projects from "./Projects";
 import Alerts from "./Hackathons";
-import PopularProjects from "./PopularProjects";
 import Dnav from "./dnav";
 
 const Dash = () => {
@@ -84,12 +83,6 @@ const Dash = () => {
         setrend("Hack");
       },
     },
-    {
-      text: "Popular Projects",
-      navfun: () => {
-        setrend("Popular");
-      },
-    },
   ];
   const modalOps = [
     {
@@ -114,8 +107,7 @@ const Dash = () => {
         return <Myproj email={email} />;
       case "Hack":
         return <Alerts email={email} />;
-      case "Popular":
-        return <PopularProjects email={email} />;
+
       case "Projects":
         return <Projects email={email} />;
 

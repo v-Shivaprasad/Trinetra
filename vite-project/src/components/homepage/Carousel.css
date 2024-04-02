@@ -132,3 +132,6 @@
     z-index: 1;
   }
   
+  .card2-img img {
+    max-height: 200px; /* Adjust the value as needed */
+  }

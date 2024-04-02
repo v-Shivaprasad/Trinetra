@@ -209,43 +209,43 @@ const Projects = ({ email }) => {
     }
   };
 
-  const [languages, setLanguages] = useState([]);
-  useEffect(() => {
-    const repoUrl =
-      "https://api.github.com/repos/machadop1407/Musical-Chat-Frontend"; // Replace with your dynamic repo URL
+  // const [languages, setLanguages] = useState([]);
+  // useEffect(() => {
+  //   const repoUrl =
+  //     "https://api.github.com/repos/machadop1407/Musical-Chat-Frontend"; // Replace with your dynamic repo URL
 
-    const fetchRepoLanguages = async () => {
-      try {
-        // Fetch repository information
-        const response = await fetch(repoUrl);
-        const data = await response.json();
+  //   const fetchRepoLanguages = async () => {
+  //     try {
+  //       // Fetch repository information
+  //       const response = await fetch(repoUrl);
+  //       const data = await response.json();
 
-        // Fetch languages information
-        const languagesResponse = await fetch(data.languages_url);
-        const languagesData = await languagesResponse.json();
+  //       // Fetch languages information
+  //       const languagesResponse = await fetch(data.languages_url);
+  //       const languagesData = await languagesResponse.json();
 
-        // Extract and set languages with percentage
-        if (languagesData) {
-          const totalSize = Object.values(languagesData).reduce(
-            (acc, size) => acc + size,
-            0
-          );
-          const languagesWithPercentage = Object.entries(languagesData).map(
-            ([language, size]) => ({
-              language,
-              percentage: (size / totalSize) * 100,
-            })
-          );
-          setLanguages(languagesWithPercentage);
-          console.log(languages);
-        }
-      } catch (error) {
-        console.error("Error fetching repo languages:", error);
-      }
-    };
+  //       // Extract and set languages with percentage
+  //       if (languagesData) {
+  //         const totalSize = Object.values(languagesData).reduce(
+  //           (acc, size) => acc + size,
+  //           0
+  //         );
+  //         const languagesWithPercentage = Object.entries(languagesData).map(
+  //           ([language, size]) => ({
+  //             language,
+  //             percentage: (size / totalSize) * 100,
+  //           })
+  //         );
+  //         setLanguages(languagesWithPercentage);
+  //         console.log(languages);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching repo languages:", error);
+  //     }
+  //   };
 
-    fetchRepoLanguages();
-  }, []);
+  //   fetchRepoLanguages();
+  // }, []);
 
   return (
     <div className="DashContent">
@@ -338,11 +338,11 @@ const Projects = ({ email }) => {
                             <br />
                             <h5>Technologies Used:</h5> {project.Technology}
                             <div className="mt-5">
-                              <div className="progress">
-                                {languages.map((lang) => (
+                              {/*   <div className="progress">
+                               {languages.map((lang) => (
                                   <ProgressBar languages={lang} />
-                                ))}
-                              </div>
+                                ))} 
+                              </div>*/}
 
                               {/* <div className="mt-3"> */}
                               <div className="projectFooter">

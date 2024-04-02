@@ -40,6 +40,7 @@ const Loginmodal = () => {
       console.log(response);
       if (!response.ok) {
         const errorData = await response.json();
+        alert(errorData.error);
         throw new Error(errorData.error || "Login failed");
       }
 
@@ -81,7 +82,8 @@ const Loginmodal = () => {
           alert(error);
         }
 
-        // navigate("/dash");
+        window.location.reload();
+        navigate("/dash");
         // console.log("Welcome to the dashboard");
       } else {
         console.error("Token not present in response data");
