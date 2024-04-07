@@ -1,6 +1,6 @@
+require('dotenv').config();
 const connection = process.env.MONGO_CONNECTION_STRING;
 const mongoose = require("mongoose");
-require('dotenv').config();
 
 
 

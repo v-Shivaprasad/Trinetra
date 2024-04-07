@@ -34,7 +34,6 @@ function getRandom5DigitInt() {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// // Example: Generate a random 5-digit integer
 
 var otp,Admintoken,RegOtp;
 let otpDict ={}
