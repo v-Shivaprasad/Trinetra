@@ -133,6 +133,7 @@ const Myproj = ({ email }) => {
       console.log(response);
       if (response.ok) {
         document.getElementById("UpdateModalClose").click();
+        document.getElementById("closebtn").click();
         setupdated(true);
         setShowLoader(false);
       } else {
@@ -471,6 +472,7 @@ const Myproj = ({ email }) => {
                                           Update Project: {project.Title}
                                         </h5>
                                         <button
+                                          id="closebtn"
                                           type="button"
                                           className="btn-close"
                                           data-bs-dismiss="modal"

@@ -16,7 +16,7 @@ const YOUR_EMAIL = process.env.EMAIL;
 const multer = require('multer');
 const path = require('path');
 const admin = require('firebase-admin');
-const serviceAccount = require('../Projects/trinetra-6807b-firebase-adminsdk-gyhqw-b8a3db3650.json');
+const serviceAccount = require('../Projects/trinetra-6807b-firebase-adminsdk-gyhqw-f6711ac95d.json');
 const router = express.Router();
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),

@@ -56,7 +56,7 @@ const App = () => {
     //     return false;
     //   }
     // });
-  }, [Token]); // Removed token from the dependency array
+  }, [Token]);
 
   return (
     <Router>
