@@ -49,12 +49,6 @@ Firebase is used for storing and managing project-related reports and documents.
 
 ## Screenshots
 
-*Include screenshots of the platform here*
-
-## Screenshots
-
-*Include screenshots of the platform here*
-
 ![Main Homepage](./images/HomepageMain.jpeg)
 ![Homepage](./images/homepage.jpeg)
 ![Notifications](./images/Notifications.jpeg)
