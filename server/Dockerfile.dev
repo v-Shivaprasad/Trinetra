@@ -1,0 +1,15 @@
+FROM node:20
+
+WORKDIR /server
+
+RUN npm install -g pnpm nodemon && npm install --build-from-source bcrypt
+
+COPY package.json ./
+RUN pnpm install
+
+COPY . .
+
+
+EXPOSE 3001
+
+CMD ["nodemon", "server.js"]

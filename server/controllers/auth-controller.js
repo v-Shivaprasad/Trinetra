@@ -1,44 +1,16 @@
 const express = require('express');
-const bcrypt = require('bcrypt');
-const User = require('../models/user-model');
-const Proj = require('../models/Project-model');
-const savedPro = require('../models/userSaved-model');
-const LikedProject = require('../models/LikedProjects-model');
-const Alerts = require('../models/Alerts-model');
 const mongoose = require('mongoose');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-require('dotenv').config();
-const key = process.env.APP_PASSWORD;
-const Admemail = process.env.Admemail;
-const Admpass = process.env.Admpass;
-const YOUR_EMAIL = process.env.EMAIL;
 const multer = require('multer');
 const path = require('path');
-const admin = require('firebase-admin');
-const serviceAccount = require('../Projects/trinetra-6807b-firebase-adminsdk-gyhqw-f6711ac95d.json');
 const router = express.Router();
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-  storageBucket: 'gs://trinetra-6807b.appspot.com',
-});
-
-const storage = admin.storage();
-const bucket = storage.bucket();
+//models-mongoose
+const { User, Proj, savedPro, LikedProject, Alerts } = require('../models/models');
 
 
 
-function getRandom5DigitInt() {
-  const min = 10000;
-  const max = 99999;
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-
-var otp,Admintoken,RegOtp;
-let otpDict ={}
+const bucket = require('../Firebase/firebase')
 const upload = multer({
-  storage: multer.memoryStorage(), // Store the file in memory before uploading to Firebase
+  storage: multer.memoryStorage(),
 });
 
 
@@ -97,84 +69,6 @@ router.post('/uploadProjects', upload.single('File'), async (req, res) => {
 });
 
 
-
-
-
-
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: YOUR_EMAIL, // Your email address
-    pass: key, // Your email password or an app-specific password
-  },
-});
-
-
-router.post('/AdminT1',async (req,res) =>{
-  try {
-    if (req.body.Admemail === Admemail && req.body.Admpassword === Admpass) {
-      
-      const random5DigitNum = getRandom5DigitInt();
-      // Email options
-      const mailOptions = {
-        from: YOUR_EMAIL, // Sender's email address
-        to: 'velagadaa@gmail.com', // Receiver's email address
-        subject: 'Admin Validation', // Email subject
-        text: random5DigitNum.toString(), // Email content in plain text
-        // You can also use html property for HTML content
-      };
-      
-      // Send the email
-      transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-          console.error('Error:', error.message);
-        } else {
-          console.log('Email sent:', info.response);
-        }
-      });
-
-     otp = random5DigitNum.toString();
-     console.log(otp);
-     bcrypt.hash(otp, 10, function(err, hash) {
-      if (err) {
-        console.error('Error hashing OTP:', err);
-        res.status(500).json({ ok: false, error: 'Internal Server Error' });
-      } else {
-        console.log('Hashed OTP:', hash);
-        // Now you can store the 'hash' in your database or use it as needed.
-        res
-        .status(201)
-        .json({ ok: true});
-        Admintoken = hash
-      }
-    });
-  }
-
-    else{
-      res.status(400).json({ ok: false, error: 'Invalid email' });
-    }
-  
-   }catch (error) {
-    console.log(error);
-    res.status(500).json({ ok: false, error: 'Internal Server Error' });
-  }
-})
-
-router.get('/AdminT2',async(req,res) =>{
-  try {
-    let rece = req.query.OTP;
-    console.log(otp);
-    if (otp == rece) {
-      res.status(200).json({ ok: true , Atoken:Admintoken});
-      otp= null
-      // console.log(otp);
-    } else {
-      res.status(200).json({ ok: false,error:'Invalid Otp' });
-    }
-  } catch (error) {
-    console.log(error);
-  }
-})
 
 router.get('/GetAlerts',async(req,res)=>{
   try {
@@ -551,133 +445,6 @@ router.get('/findInst', async (req, res) => {
   }
 });
 
-router.post('/users', async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.signpassword, 10);
-
-    const user = new User({
-      name: req.body.name,
-      signemail: req.body.signemail,
-      profession: req.body.profession,
-      institution: req.body.institution,
-      signpassword: hashedPassword,
-    });
-   console.log(user);
-    const resu = await user.save();
-    res.status(201).json({result: resu,ok:true});
-  } catch (error) {
-    console.log(error);
-    if (error.code === 11000) {
-      // Duplicate key error (email already exists)
-      res.status(400).json({ error: 'Email already exists.' ,ok:false});
-    } else {
-      console.log(error);
-      res.status(500).json({ error: 'Internal server error',ok:false });
-    }
-  }
-});
-
-// OLD LOGIC
-router.get("/users/initiateReg",async (req,res) =>{
-  try {
-    const email = req.query.email;
-    const genOtp = getRandom5DigitInt();
-    const mailOptions = {
-    from: YOUR_EMAIL, 
-    to: email, 
-    subject: 'Client Validation',
-    text: genOtp.toString(), // Email content in plain text
-    // You can also use html property for HTML content
-      };
-
-     transporter.sendMail(mailOptions, (error, info) => {
-     if (error) {
-      console.error('Error:', error.message);
-      res.status(500).json({ok:false,error:error})
-    } else {
-      console.log('Email sent:', info.response);
-      // RegOtp = genOtp;
-      otpDict[email] = genOtp;
-      res.status(201).json({ ok: true });
-    }
-
-  }); 
-
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-router.post('/users/validateOtp', async (req, res) => {
-  try {
-    console.log(req.body);
-    const enteredOtp = Number(req.body.otp);
-    const userEmail = req.body.email;
-
-    if (!enteredOtp || !userEmail) {
-      return res.status(400).json({ error: 'Missing OTP or email in request body' });
-    }
-
-    if (enteredOtp === otpDict[userEmail]) {
-      delete otpDict[userEmail]; // Delete the OTP for this email
-      return res.status(201).json({ ok: true });
-    } else {
-      return res.status(400).json({ ok: false, error: 'Invalid OTP' });
-    }
-  } catch (error) {
-    console.error('Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
-
-
-
-
-router.get('/users/check-email', async (req, res) => {
-  try {
-    const userExist = await User.findOne({ signemail: req.query.email });
-
-    if (userExist) {
-      return res.status(400).json({ msg: 'Email already exists' , ok:false });
-    }
-    return res.status(200).json({ msg: 'Email is available', ok: true });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-
-// 
-router.post('/users/login', async (req, res) => {
-  try {
-    const user = await User.findOne({ signemail: req.body.logemail });
-
-    if (!user) {
-      // User not found with the provided email
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    const passwordMatch = await bcrypt.compare(req.body.logpassword, user.signpassword);
-
-    if (!passwordMatch) {
-      // Password does not match
-      return res.status(401).json({ error: 'Invalid password' });
-    }
-
-    // Login successful
-    const cToken = await user.generateToken();;
-    res
-    .status(201)
-    .json({msg: 'Login Succesful',token:cToken})
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
 
 
 module.exports = router;

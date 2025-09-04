@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./controllers/auth-controller');
+const Adminroutes = require('./controllers/Authentication-routes');
 const path = require('path');
 require('dotenv').config();
 const app = express();
@@ -14,7 +15,8 @@ connectDb();
 
 
 // Use auth routes
-app.use('/api', authRoutes);
+// app.use('/api', authRoutes);
+app.use('/api',Adminroutes)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
