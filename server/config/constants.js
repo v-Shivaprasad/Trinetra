@@ -5,4 +5,5 @@ module.exports = {
   Admpass: process.env.Admpass,
   YOUR_EMAIL: process.env.EMAIL,
   sbucket:process.env.firebase_storage_bucket,
+  Connection_string:process.env.MONGO_CONNECTION_STRING
 };
