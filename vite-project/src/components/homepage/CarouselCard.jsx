@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import './Carousel.css'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleLeft, faAngleRight } from '@fortawesome/free-solid-svg-icons'
-import img1 from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/images1.jpeg";
-import img2 from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/images2saveprojects.png";
-import img3 from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/research.png";
-import img4 from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/savetime.png";
-import img from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/img.png";
+import img1 from "../../assets/images1.jpeg";
+import img2 from "../../assets/images2saveprojects.png";
+import img3 from "../../assets/research.png";
+import img4 from "../../assets/savetime.png";
+import img from "../../assets/img.png";
 
 const CarouselCard = () => {
   const [isAutoPlay, setIsAutoPlay] = useState(true); // Initialize isAutoPlay state

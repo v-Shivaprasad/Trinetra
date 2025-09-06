@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import logo from "/Users/Dell/Desktop/trinetra/vite-project/src/assets/logo.jpg";
+import React, { useState,useEffect } from "react";
+import logo from "../../assets/logo.jpg";
 import Loginmodal from "./loginmodal";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
@@ -11,23 +11,28 @@ import "../homepage/navbar.css";
 
 const Navbar = ({ navLinks, modalOps, svgcolor }) => {
   const { showbtn, setshowbtn } = useAuth();
-  const token = localStorage.getItem("token");
-  if (token) {
-    setshowbtn(true);
-  } else {
-    setshowbtn(false);
-  }
-  const [OTP, setOTP] = useState({
-    otp: "",
-  });
-  const settingotp = (e) => {
-    const id = e.target.id;
-    const value = e.target.value;
-    setOTP((prevOTP) => ({
-      ...prevOTP,
-      [id]: value,
-    }));
-  };
+
+  // ❌ Removed direct state change during render
+  // ✅ Instead, check login state after render
+  useEffect(() => {
+    fetch("http://localhost:3001/api/auth/status", {
+      method: "GET",
+      credentials: "include", // ensure cookies are sent
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          setshowbtn(false);
+          return;
+        }
+        const data = await res.json();
+        setshowbtn(data.authenticated);
+      })
+      .catch(() => {
+        setshowbtn(false);
+      });
+  }, [setshowbtn]);
+
+  const [OTP, setOTP] = useState({ otp: "" });
   const [modopen, setmodopen] = useState(false);
   const [user, setUser] = useState({
     name: "",
@@ -49,23 +54,20 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
     let value = e.target.value;
 
     if (name === "profession") {
-      // If the selected profession is "Student" or "Teacher", show the institution field
       const showInstitution = value === "Student" || value === "Teacher";
       setUser((prevUser) => ({
         ...prevUser,
         [name]: value,
-        // Show/hide the institution field based on the selected profession
         institution: showInstitution ? prevUser.institution : "Default",
-        // institution: value === "Default" ? "Default" : prevUser.institution,
       }));
     } else {
-      // For other fields, update the user state as usual
       setUser((prevUser) => ({
         ...prevUser,
         [name]: value,
       }));
     }
   };
+
   const [showLoader, setShowLoader] = useState(false);
 
   const ShowModalOps = () => {
@@ -81,145 +83,128 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
     }
   };
 
-  const handleForm = async (e) => {
-    e.preventDefault();
-    setShowLoader(true);
-    console.log(user);
-    if (user.profession !== "") {
-      if (user.signpassword === user.conpass) {
-        try {
-          // Check if the email already exists in the database
-          const emailCheckResponse = await fetch(
-            `http://localhost:3001/api/users/check-email?email=${user.signemail}`
-          );
+const handleForm = async (e) => {
+  e.preventDefault();
+  setShowLoader(true);
 
-          if (!emailCheckResponse.ok) {
-            setShowLoader(false);
-            const errorData = await emailCheckResponse.json();
-            document.getElementById("emailError").innerHTML =
-              "Email already exits";
-            alert("Email already exists");
-            console.log(emailCheckResponse);
-            document.getElementById("closebutton").click();
-            return; // Stop registration if email check fails
-          }
+  // Clear previous errors
+  document.getElementById("professionError").innerHTML = "";
+  document.getElementById("passnomatch").innerHTML = "";
+  document.getElementById("emailError").innerHTML = "";
 
-          const initiateReg = await fetch(
-            `http://localhost:3001/api/users/initiateReg?email=${user.signemail}`
-          );
-          if (!initiateReg.ok) {
-            setShowLoader(false);
-            console.log(emailCheckResponse);
-            document.getElementById("closebutton").click();
-            return; // Stop registration if email check fails
-          }
+  if (!user.profession) {
+    document.getElementById("professionError").innerHTML =
+      "This field cannot be left empty";
+    setShowLoader(false);
+    return;
+  }
 
-          document.getElementById("signupClose").click();
-          setShowLoader(false);
-          const Otpmodal = document.getElementById("OTPmodal");
-          const otpmodal = new bootstrap.Modal(Otpmodal);
-          otpmodal.show();
-        } catch (error) {
-          console.log("Error", error);
-        }
-      } else {
-        setShowLoader(false);
-        document.getElementById("passnomatch").innerHTML =
-          "Passwords do not match";
-      }
-    } else {
+  if (user.signpassword !== user.conpass) {
+    document.getElementById("passnomatch").innerHTML = "Passwords do not match";
+    setShowLoader(false);
+    return;
+  }
+
+  try {
+    // Check if email already exists
+    const emailCheckResponse = await fetch(
+      `http://localhost:3001/api/users/check-email?email=${user.signemail}`
+    );
+    const emailCheck = await emailCheckResponse.json();
+    if (!emailCheck.ok) {
+      document.getElementById("emailError").innerHTML = "Email already exists";
       setShowLoader(false);
-      document.getElementById("professionError").innerHTML =
-        "This field cannot be left empty";
+      return;
     }
-  };
 
-  const Otpcheck = async (e) => {
-    e.preventDefault();
-    try {
-      const data = {
-        otp: OTP.otp,
-        email: user.signemail,
-      };
-      const otpcheck = await fetch(
-        "http://localhost:3001/api/users/validateOtp",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            // Add any other headers as needed
-          },
-          body: JSON.stringify(data),
-        }
-      );
+    // Initiate OTP verification
+    const otpInitiate = await fetch(
+      `http://localhost:3001/api/users/initiateReg?email=${user.signemail}`
+    );
+    if (!otpInitiate.ok) throw new Error("Failed to initiate OTP");
 
-      console.log(otpcheck);
-      if (!otpcheck.ok) {
-        document.getElementById("otpclose").click();
-        document.getElementById("signupClose").click();
-        alert("Otp validation error");
-        console.log(otpcheck);
-        return;
+    document.getElementById("signupClose").click();
+    setShowLoader(false);
+
+    // Show OTP modal
+    const Otpmodal = document.getElementById("OTPmodal");
+    const otpmodal = new bootstrap.Modal(Otpmodal);
+    otpmodal.show();
+  } catch (error) {
+    console.log("Signup error:", error);
+    setShowLoader(false);
+  }
+};
+
+const Otpcheck = async (e) => {
+  e.preventDefault();
+  setShowLoader(true);
+
+  try {
+    const data = {
+      otp: OTP.otp,
+      email: user.signemail,
+    };
+
+    // Validate OTP
+    const otpcheck = await fetch(
+      "http://localhost:3001/api/users/validateOtp",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       }
-      const registrationResponse = await fetch(
-        "http://localhost:3001/api/users",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(user),
-        }
-      );
+    );
 
-      if (!registrationResponse.ok) {
-        // Handle HTTP error
-        throw new Error(`HTTP error! Status: ${registrationResponse.status}`);
-      }
-
-      const responseData = await registrationResponse.json();
-      console.log(responseData);
-      if (responseData.ok) {
-        setOTP({
-          otp: "",
-        });
-        document.getElementById("otpclose").click();
-        document.getElementById("closebutton").click();
-        setUser({
-          name: "",
-          signemail: "",
-          profession: "",
-          signpassword: "",
-          conpass: "",
-        });
-
-        console.log(responseData);
-
-        const toast = document.getElementById("registrationtoast");
-        const bsToast = new bootstrap.Toast(toast);
-        bsToast.show();
-      } else {
-        const errorData = await registrationResponse.json();
-        console.log(errorData);
-        setOTP({
-          otp: "",
-        });
-        document.getElementById("otpclose").click();
-        document.getElementById("closebutton").click();
-        setUser({
-          name: "",
-          signemail: "",
-          profession: "",
-          signpassword: "",
-          conpass: "",
-        });
-      }
-    } catch (error) {
-      console.log(error);
+    const otpRes = await otpcheck.json();
+    if (!otpRes.ok) {
+      alert("Invalid OTP, please try again.");
+      setShowLoader(false);
+      return;
     }
-  };
 
-  const clearFields = (e) => {
+    // Signup request after OTP verified
+    const signupRes = await fetch("http://localhost:3001/api/users", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(user),
+    });
+
+    const signupData = await signupRes.json();
+    if (!signupData.ok) {
+      alert(signupData.error || "Signup failed");
+      setShowLoader(false);
+      return;
+    }
+
+    // Store access token immediately
+    localStorage.setItem("token", signupData.accessToken);
+    setTrueLogin(true); // Automatically log in the user
+    setshowbtn(true);
+
+    // Reset form & OTP
+    setUser({
+      name: "",
+      signemail: "",
+      profession: "",
+      signpassword: "",
+      conpass: "",
+      institution: "",
+    });
+    setOTP({ otp: "" });
+
+    document.getElementById("otpclose").click();
+
+    // Navigate to dashboard
+    navigate("/dash");
+  } catch (error) {
+    console.log("Error during OTP/signup:", error);
+  } finally {
+    setShowLoader(false);
+  }
+};
+
+ const clearFields = (e) => {
     // console.log(islogin);
     e.preventDefault();
     setUser({
@@ -235,7 +220,6 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
     document.getElementById("emailError").innerHTML = "";
     document.getElementById("closebutton").click(); // Programmatically click the close button
   };
-
   const showLoaderOverlay = showLoader ? (
     <div className="loader-overlay" id="loaderbg">
       <div
@@ -554,8 +538,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
           ></button>
         </div>
         <div className="toast-body">
-          Registration successful! Please login once again using your
-          credentials! Happy Coding!!!
+          Registration successful! Happy Coding!!!
         </div>
       </div>
       <div
@@ -586,7 +569,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
                     className="form-control"
                     required
                     value={OTP.otp}
-                    onChange={settingotp}
+                    onChange={setOTP}
                   />
                 </div>
               </div>

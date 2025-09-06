@@ -1,8 +1,8 @@
 import React from "react";
-import apj from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/apj.jpg";
-import arya from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/aryabhat.jpg";
-import sr from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/ramanujam.jpg";
-import logs from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/logo.jpg";
+import apj from "../../assets/apj.jpg";
+import arya from "../../assets/aryabhat.jpg";
+import sr from   "../../assets/ramanujam.jpg";
+import logs from "../../assets/logo.jpg";
 
 const Aboutus = () => {
   return (

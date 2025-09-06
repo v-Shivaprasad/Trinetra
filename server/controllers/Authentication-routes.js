@@ -2,7 +2,7 @@ const router = require("./auth-controller");
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const nodemailer = require('nodemailer');
-const {  Admemail, Admpass, YOUR_EMAIL ,key} = require('../config/constants');
+const {  Admemail, Admpass, YOUR_EMAIL ,key, JWT_SECRET, JWT_REFRESH_SECRET} = require('../config/constants');
 const {User} = require("../models/models")
 
 let otpDict={},AdminStore={};
@@ -20,7 +20,6 @@ function getRandom5DigitInt() {
   const max = 99999;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
-
 
 router.post('/AdminT1',async (req,res) =>{
   try {
@@ -45,7 +44,7 @@ router.post('/AdminT1',async (req,res) =>{
       });
 
      const otp = random5DigitNum.toString();
-     console.log(otp);
+    //  console.log(otp);
      bcrypt.hash(otp, 10, function(err, hash) {
       if (err) {
         console.error('Error hashing OTP:', err);
@@ -161,29 +160,116 @@ router.get('/users/check-email', async (req, res) => {
 });
 
 
-router.post('/users', async (req, res) => {
-  try {
-    const hashedPassword = await bcrypt.hash(req.body.signpassword, 10);
+// router.post('/users', async (req, res) => {
+//   try {
+//     const hashedPassword = await bcrypt.hash(req.body.signpassword, 10);
 
-    const user = new User({
-      name: req.body.name,
-      signemail: req.body.signemail,
-      profession: req.body.profession,
-      institution: req.body.institution,
-      signpassword: hashedPassword,
-    });
-   console.log(user);
-    const resu = await user.save();
-    res.status(201).json({result: resu,ok:true});
+//     const user = new User({
+//       name: req.body.name,
+//       signemail: req.body.signemail,
+//       profession: req.body.profession,
+//       institution: req.body.institution,
+//       signpassword: hashedPassword,
+//     });
+//    console.log(user);
+//     const resu = await user.save();
+//     res.status(201).json({result: resu,ok:true});
+//   } catch (error) {
+//     console.log(error);
+//     if (error.code === 11000) {
+//       res.status(400).json({ error: 'Email already exists.' ,ok:false});
+//     } else {
+//       console.log(error);
+//       res.status(500).json({ error: 'Internal server error',ok:false });
+//     }
+//   }
+// });
+
+
+
+router.get('/users/me', async (req, res) => {
+  try {
+    const token = req.cookies.accessToken;
+    console.log(`Cookies: ${req.cookies.accessToken}` );
+    console.log(token)
+    if (!token) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    let decoded;
+    try {
+      console.log("it is not null")
+      decoded = jwt.verify(token, JWT_SECRET);
+      console.log(`decoded: ${decoded}`);
+    } catch (err) {
+      if (err.name === 'TokenExpiredError') {
+        return res.status(401).json({ error: 'Token expired' });
+      } else {
+        return res.status(401).json({ error: `Invalid token ` });
+      }
+    }
+    const user = await User.findOne({ signemail: decoded.email }).select('-signpassword');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({ user });
   } catch (error) {
     console.log(error);
-    if (error.code === 11000) {
-      // Duplicate key error (email already exists)
-      res.status(400).json({ error: 'Email already exists.' ,ok:false});
-    } else {
-      console.log(error);
-      res.status(500).json({ error: 'Internal server error',ok:false });
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+router.post('/users', async (req, res) => {
+  try {
+    const { name, signemail, profession, institution, signpassword } = req.body;
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ signemail });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email already exists.', ok: false });
     }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(signpassword, 10);
+
+    // Create user
+    const user = new User({
+      name,
+      signemail,
+      profession,
+      institution,
+      signpassword: hashedPassword,
+    });
+
+    const savedUser = await user.save();
+
+    // Generate tokens
+    const accessToken = jwt.sign(
+      { email: savedUser.signemail, id: savedUser._id },
+      ACCESS_TOKEN_SECRET,
+      { expiresIn: '2h' } // access token short-lived
+    );
+
+    const refreshToken = jwt.sign(
+      { email: savedUser.signemail, id: savedUser._id },
+      REFRESH_TOKEN_SECRET,
+      { expiresIn: '7d' } // refresh token long-lived
+    );
+
+    // Send refresh token as httpOnly cookie
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    // Send access token in response
+    res.status(201).json({ user: savedUser, accessToken, ok: true });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal server error', ok: false });
   }
 });
 
@@ -202,14 +288,97 @@ router.post('/users/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    const cToken = await user.generateToken();;
+    const { accessToken, refreshToken } = await user.generateTokens();
+     const cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'lax',
+    };
     res
-    .status(201)
-    .json({msg: 'Login Succesful',token:cToken})
+      .cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      .status(200)
+      .json({ msg: "Login successful" ,ok:true});
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+router.get("/auth/status", (req, res) => {
+  const token = req.cookies?.accessToken;
+
+  if (!token) {
+    return res.json({ authenticated: false });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    return res.json({
+      authenticated: true,
+      user: { id: decoded.id, email: decoded.email },
+    });
+  } catch (err) {
+    return res.json({ authenticated: false });
+  }
+});
+
+router.get('/users/refresh', async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'No refresh token, login again' });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    // Generate new access token
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId, email: decoded.email },
+      key,
+      { expiresIn: '15m' }
+    );
+
+    // Optional: generate a new refresh token (rotating refresh tokens)
+    const newRefreshToken = jwt.sign(
+      { userId: decoded.userId, email: decoded.email },
+      key,
+      { expiresIn: '7d' }
+    );
+
+    // Set cookies
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: false, // true in prod with HTTPS
+      sameSite: 'lax',
+      maxAge: 15 * 60 * 1000
+    });
+
+    res.cookie('refreshToken', newRefreshToken, {
+      httpOnly: true,
+      secure: false, // true in prod with HTTPS
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+
+    res.status(200).json({ ok: true, msg: 'Tokens refreshed' });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 
 module.exports = router;

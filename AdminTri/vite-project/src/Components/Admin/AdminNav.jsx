@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from "/Users/Dell/Desktop/trinetra/vite-project/src/assets/logo.jpg";
+import logo from "../../assets/logo.jpg";
 import Adminmodal from "./Adminmodal";
 const AdminNav = ({ navLinks }) => {
   const handleNavClick = (Navfun) => {

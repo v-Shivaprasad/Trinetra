@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import logo from "/Users/Dell/Desktop/trinetra/vite-project/src/assets/logo.jpg";
+import logo from "../../assets/logo.jpg";
 import AdminNav from "./AdminNav";
 import Alerts from "./Alerts";
 import "bootstrap/dist/css/bootstrap.min.css";

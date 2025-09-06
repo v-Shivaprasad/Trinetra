@@ -13,50 +13,46 @@ const App = () => {
   const [email, setemail] = useState("");
   const [Token, setToken] = useState(localStorage.getItem("token"));
 
-  useEffect(() => {
-    // const token = localStorage.getItem("token");
-
-    const islogin = localStorage.getItem("Trueshow");
-
-    const validate = async (Token, islogin) => {
-      try {
-        const resp = await fetch(
-          `http://localhost:3001/api/ValidateToken?token=${Token}`
+useEffect(() => {
+  const checkLogin = async () => {
+    try {
+      const resp = await fetch("http://localhost:3001/api/users/me", {
+        credentials: "include", // important to send cookies
+      });
+      if (resp.ok) {
+        const data = await resp.json();
+        setTrueLogin(true);
+        setemail(data.user.signemail);
+      } else {
+        // try refresh token
+        const refreshResp = await fetch(
+          "http://localhost:3001/api/users/refresh",
+          { credentials: "include" }
         );
-        const respo = await resp.json();
-        console.log(respo);
-        const Mtoken = respo.validToken;
-        setemail(respo.decoded);
-
-        if (Mtoken && islogin) {
-          setTrueLogin(true);
+        if (refreshResp.ok) {
+          // retry /users/me after refresh
+          const retryResp = await fetch("http://localhost:3001/api/users/me", {
+            credentials: "include",
+          });
+          if (retryResp.ok) {
+            const data = await retryResp.json();
+            setTrueLogin(true);
+            setemail(data.user.signemail);
+          } else {
+            setTrueLogin(false);
+          }
         } else {
           setTrueLogin(false);
-          localStorage.removeItem("token");
-          setToken(null);
         }
-      } catch (error) {
-        console.log(error);
-        setTrueLogin(false);
-        localStorage.removeItem("token");
-        setToken(null);
       }
-    };
-
-    if (Token != undefined || Token != " ") {
-      validate(Token, islogin);
+    } catch (error) {
+      console.log(error);
+      setTrueLogin(false);
     }
-    // setTrueLogin((prevTrueLogin) => {
-    //   if (token) {
-    //     validate(token, islogin);
-    //     return prevTrueLogin; // Keep the current state value until the new state is determined
-    //   } else {
-    //     localStorage.removeItem("token");
-    //     localStorage.removeItem("Trueshow");
-    //     return false;
-    //   }
-    // });
-  }, [Token]);
+  };
+
+  checkLogin();
+}, []);
 
   return (
     <Router>

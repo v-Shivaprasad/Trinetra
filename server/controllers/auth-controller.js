@@ -8,7 +8,8 @@ const { User, Proj, savedPro, LikedProject, Alerts } = require('../models/models
 
 
 
-const bucket = require('../Firebase/firebase')
+const bucket = require('../Firebase/firebase');
+const { JWT_SECRET } = require('../config/constants');
 const upload = multer({
   storage: multer.memoryStorage(),
 });
@@ -122,20 +123,8 @@ router.delete('/DeleteAlert/:id', async (req, res) => {
 
 
 
-router.get('/FindProfile', async (req, res) => {
-  try {
-    const Profile = await User.findOne({ signemail: req.query.email });
-    
-    if (Profile) {
-      res.json({ Profile });
-    } else {
-      res.status(404).json({ error: 'User not found' });
-    }
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
-  }
-});
+
+
 
 //Retrieve favorites in dasboard save Earlier
 router.get('/GetFav', async (req, res) => {
@@ -323,24 +312,6 @@ router.post('/removeSavedPro', async (req, res) => {
 
 
 
-router.get('/ValidateToken', async (req, res) => {
-  const token = req.query.token;
-  // console.log(token);
-  try {
-    const verified = jwt.verify(token, 'Brahmi_delta_force');
-    if(verified){
-    res.status(200).json({ validToken: true, decoded: verified });
-    }
-    else{
-      localStorage.removetem("token");
-    }
-    
-
-  } catch (error) {
-    // console.error(error); 
-    res.status(401).json({ validToken: false, error: 'Invalid token' });
-  }
-});
 
 //fetch USers
 router.get('/FetchUsers',async(req,res) =>{

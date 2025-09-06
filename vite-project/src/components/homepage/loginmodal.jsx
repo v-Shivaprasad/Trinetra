@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../../store/Authmanage";
 import { Navigate, useNavigate } from "react-router-dom";
 const Loginmodal = () => {
-  const { islogin, setislogin, storetoken, setshowbtn, client, setclient } =
-    useAuth();
+  const { islogin, setislogin, setshowbtn, client, setClient } = useAuth();
 
   const navigate = useNavigate();
   const [login, setlogin] = useState({
@@ -24,74 +23,117 @@ const Loginmodal = () => {
     document.getElementById("logemail").innerHTML = "";
   };
 
-  const loginPrint = async (e) => {
-    document.getElementById("logclosebutton").click();
-    e.preventDefault();
-    console.table(login);
+  // const loginPrint = async (e) => {
+  //   document.getElementById("logclosebutton").click();
+  //   e.preventDefault();
+  //   console.table(login);
 
-    try {
-      const response = await fetch("http://localhost:3001/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(login),
-      });
-      console.log(response);
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(errorData.error);
-        throw new Error(errorData.error || "Login failed");
-      }
+  //   try {
+  //     const response = await fetch("http://localhost:3001/api/users/login", {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(login),
+  //     });
+  //     console.log(response);
+  //     if (!response.ok) {
+  //       const errorData = await response.json();
+  //       alert(errorData.error);
+  //       throw new Error(errorData.error || "Login failed");
+  //     }
 
-      const responseData = await response.json();
-      console.log(responseData); // Log the entire response data
+  //     const responseData = await response.json();
+  //     console.log(responseData); // Log the entire response data
 
-      const token = responseData.token;
+  //     const token = responseData.token;
 
-      if (token) {
-        console.log(token);
-        setislogin(true);
-        console.log(islogin);
-        localStorage.setItem("Trueshow", true);
-        setshowbtn(true);
-        storetoken(token);
-        const email = login.logemail;
-        console.log(email);
-        // localStorage.setItem("email", login.logemail);
+  //     if (token) {
+  //       console.log(token);
+  //       setislogin(true);
+  //       console.log(islogin);
+  //       localStorage.setItem("Trueshow", true);
+  //       setshowbtn(true);
+  //       storetoken(token);
+  //       const email = login.logemail;
+  //       console.log(email);
+  //       // localStorage.setItem("email", login.logemail);
 
-        try {
-          const profile = await fetch(
-            `http://localhost:3001/api/FindProfile?email=${email}`
-          );
-          const details = await profile.json();
-          console.table(details);
-        } catch (error) {
-          console.error(error);
-        }
+  //       try {
+  //         const profile = await fetch(
+  //           `http://localhost:3001/api/FindProfile?email=${email}`
+  //         );
+  //         const details = await profile.json();
+  //         console.table(details);
+  //       } catch (error) {
+  //         console.error(error);
+  //       }
 
-        try {
-          const instName = await fetch(
-            `http://localhost:3001/api/findInst?email=${login.logemail}`
-          );
+  //       try {
+  //         const instName = await fetch(
+  //           `http://localhost:3001/api/findInst?email=${login.logemail}`
+  //         );
 
-          const resp = await instName.json();
-          // console.log(resp);
-          // localStorage.setItem("Inst", resp.institution);
-        } catch (error) {
-          alert(error);
-        }
+  //         const resp = await instName.json();
+  //         // console.log(resp);
+  //         // localStorage.setItem("Inst", resp.institution);
+  //       } catch (error) {
+  //         alert(error);
+  //       }
 
-        window.location.reload();
-        navigate("/dash");
-        // console.log("Welcome to the dashboard");
-      } else {
-        console.error("Token not present in response data");
-      }
-    } catch (error) {
-      console.error("Error during login:", error.message);
+  //       // window.location.reload();
+  //       navigate("/dash");
+  //       // console.log("Welcome to the dashboard");
+  //     } else {
+  //       console.error("Token not present in response data");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error during login:", error.message);
+  //   }
+  // };
+const loginPrint = async (e) => {
+  e.preventDefault();
+  document.getElementById("logclosebutton").click();
+  console.table(login);
+
+  try {
+    const response = await fetch("http://localhost:3001/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(login),
+      credentials: "include", // <-- crucial for HTTP-only cookies
+    });
+    const res = await response.json();
+    console.log(res);
+    if (!res.ok) {
+      
+      alert(errorData.error);
+      throw new Error(errorData.error || "Login failed");
     }
-  };
+    // No token in response; backend sets it in HTTP-only cookie
+    setislogin(true);
+    setshowbtn(true);
+
+    // Optionally fetch user profile for state
+    try {
+      const profileResp = await fetch(
+        `http://localhost:3001/api/users/me`,
+        { credentials: "include" }
+      );
+      const profile = await profileResp.json();
+      console.table(profile);
+      setClient(profile); // store profile in global state if needed
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    }
+
+    navigate("/dash"); // go to dashboard
+  } catch (error) {
+    console.error("Error during login:", error.message);
+  }
+};
 
   return (
     <>

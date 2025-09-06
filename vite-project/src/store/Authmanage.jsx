@@ -1,27 +1,50 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState,useEffect } from "react";
 
 const AuthManage = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [islogin, setislogin] = useState(false);
-
-  const [token, settoken] = useState(localStorage.getItem("token"));
   const [showbtn, setshowbtn] = useState(false);
+  const [client, setClient] = useState(null);
 
-  const storetoken = (token) => {
-    return localStorage.setItem("token", token);
-  };
+    // Check auth from backend
+useEffect(() => {
+  fetch("http://localhost:3001/api/auth/status", {
+    method: "GET",
+    credentials: "include",
+  })
+    .then(async (res) => {
+      if (!res.ok) {
+        setislogin(false);
+        setshowbtn(false);
+        return;
+      }
+
+      const data = await res.json();
+
+      if (data.authenticated) {
+        setislogin(true);
+        setshowbtn(true);
+      } else {
+        setislogin(false);
+        setshowbtn(false);
+      }
+    })
+    .catch(() => {
+      setislogin(false);
+      setshowbtn(false);
+    });
+}, []);
 
   return (
     <AuthManage.Provider
       value={{
         islogin,
         setislogin,
-        storetoken,
-        token,
-        settoken,
         showbtn,
         setshowbtn,
+        client, 
+        setClient,    
       }}
     >
       {children}

@@ -1,6 +1,6 @@
 import React from "react";
-import vid from "/Users/Dell/Desktop/Trinetra/vite-project/src/assets/course-video.mp4";
-import "/Users/Dell/Desktop/Trinetra/vite-project/src/components/homepage/banner.css";
+import vid from "../../assets/course-video.mp4";
+import "./banner.css";
 
 const Mainbanner = () => {
   return (
