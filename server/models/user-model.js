@@ -53,25 +53,6 @@ const userSchema = new mongoose.Schema({
 function hashToken(token){
   return crypto.createHash('sha256').update(token).digest('hex');
 }
-// userSchema.methods.generateToken = async function () {
-//   try {
-//     const formattedDate = new Date().toISOString();
-//     this.lastLoggedInDate = formattedDate; 
-//     await this.save();
-
-//     const token = jwt.sign(
-//       { email: this.signemail,id:this._id },
-//       JWT_SECRET,
-//       { expiresIn: '1h' }
-//     );
-
-//     return token;
-//   } catch (error) {
-//     // Handle error (e.g., log it or throw a custom error)
-//     console.error('Error generating token:', error);
-//     throw new Error('Token generation failed');
-//   }
-// };
 
 userSchema.methods.generateTokens = async function(){
   try {
@@ -90,10 +71,10 @@ userSchema.methods.generateTokens = async function(){
       { expiresIn: '7d' }
     );
 
-    const refreshHash = hashToken(refreshToken);
-    this.refreshTokens = this.refreshTokens || [];
-    this.refreshTokens.push({ tokenHash: refreshHash, createdAt: new Date() });
-    await this.save();
+    // const refreshHash = hashToken(refreshToken);
+    // this.refreshTokens = this.refreshTokens || [];
+    // this.refreshTokens.push({ tokenHash: refreshHash, createdAt: new Date() });
+    // await this.save();
     return { accessToken, refreshToken };
   } catch (error) {
     console.error('Error generating tokens:', error);

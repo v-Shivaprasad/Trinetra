@@ -3,7 +3,7 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
-  Navigate,
+  Navigate
 } from "react-router-dom";
 import Homemain from "./components/homepage/homemain";
 import Dash from "./components/dashboard/dash";
@@ -11,58 +11,75 @@ import Dash from "./components/dashboard/dash";
 const App = () => {
   const [TrueLogin, setTrueLogin] = useState(false);
   const [email, setemail] = useState("");
-  const [Token, setToken] = useState(localStorage.getItem("token"));
-
-useEffect(() => {
-  const checkLogin = async () => {
+  const logout = async () => {
     try {
-      const resp = await fetch("http://localhost:3001/api/users/me", {
-        credentials: "include", // important to send cookies
+      await fetch("http://localhost:3001/api/users/logout", {
+        method: "POST",
+        credentials: "include", // ensure cookies are cleared
       });
-      if (resp.ok) {
-        const data = await resp.json();
-        setTrueLogin(true);
-        setemail(data.user.signemail);
+    } catch (err) {
+      console.error("Logout failed", err);
+    } finally {
+      setemail("")
+      // navigate("/");
+    }
+  };
+useEffect(() => {
+  const check = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/auth/status", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const data = await res.json();
+      console.log("Status response:", data);
+
+      if (data.authenticated) {
+        // ✅ Access token is valid
+        setemail(data.user.email);
       } else {
-        // try refresh token
-        const refreshResp = await fetch(
-          "http://localhost:3001/api/users/refresh",
-          { credentials: "include" }
-        );
-        if (refreshResp.ok) {
-          // retry /users/me after refresh
-          const retryResp = await fetch("http://localhost:3001/api/users/me", {
-            credentials: "include",
-          });
-          if (retryResp.ok) {
-            const data = await retryResp.json();
-            setTrueLogin(true);
-            setemail(data.user.signemail);
-          } else {
-            setTrueLogin(false);
-          }
-        } else {
-          setTrueLogin(false);
+        // 🔄 Try refresh
+        console.log("hereee");
+        const ref = await fetch("http://localhost:3001/api/users/refresh", {
+          method: "POST",
+          credentials: "include",
+        });
+        const r = await ref.json();
+        console.log(r);
+        if (!r.ok) {
+          await logout();
+          return;
         }
+
+        const refr = await ref.json();
+        console.log("Refresh response:", refr);
+        setemail(refr.user.email);
       }
-    } catch (error) {
-      console.log(error);
-      setTrueLogin(false);
+    } catch (err) {
+      console.error(err);
+      await logout();
     }
   };
 
-  checkLogin();
+  check();
 }, []);
+
+useEffect(() => {
+  if (email) {
+    console.log("Updated email:", email);
+  }
+}, [email]);
 
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Homemain />} />
 
-        {!TrueLogin && (
+        {!email && (
           <Route path="/dash" element={<Navigate to="/" replace />} />
         )}
-        {TrueLogin && <Route path="/dash" element={<Dash />} />}
+        {email && <Route path="/dash" element={<Dash email={email}/>} />}
       </Routes>
     </Router>
   );

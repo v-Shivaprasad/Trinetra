@@ -200,20 +200,20 @@ router.get('/users/me', async (req, res) => {
     try {
       console.log("it is not null")
       decoded = jwt.verify(token, JWT_SECRET);
-      console.log(`decoded: ${decoded}`);
+      // console.log(`decoded: ${decoded}`);
     } catch (err) {
       if (err.name === 'TokenExpiredError') {
-        return res.status(401).json({ error: 'Token expired' });
+        return res.status(401).json({ error: 'Token expired' ,ok:false});
       } else {
-        return res.status(401).json({ error: `Invalid token ` });
+        return res.status(401).json({ error: `Invalid token  ${err}`,ok:false});
       }
     }
     const user = await User.findOne({ signemail: decoded.email }).select('-signpassword');
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'User not found',ok:"false" });
     }
 
-    res.json({ user });
+    res.json({ user,ok:"true" });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
@@ -244,28 +244,27 @@ router.post('/users', async (req, res) => {
     const savedUser = await user.save();
 
     // Generate tokens
-    const accessToken = jwt.sign(
-      { email: savedUser.signemail, id: savedUser._id },
-      ACCESS_TOKEN_SECRET,
-      { expiresIn: '2h' } // access token short-lived
-    );
-
-    const refreshToken = jwt.sign(
-      { email: savedUser.signemail, id: savedUser._id },
-      REFRESH_TOKEN_SECRET,
-      { expiresIn: '7d' } // refresh token long-lived
-    );
+    const {accessToken,refreshToken} = await user.generateTokens();
 
     // Send refresh token as httpOnly cookie
-    res.cookie('refreshToken', refreshToken, {
+    const cookieOptions = {
       httpOnly: true,
       secure: false,
       sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    };
+    res
+      .cookie("accessToken", accessToken, {
+        ...cookieOptions,
+        maxAge: 15 * 60 * 1000,
+      })
+      .cookie("refreshToken", refreshToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+
 
     // Send access token in response
-    res.status(201).json({ user: savedUser, accessToken, ok: true });
+    res.status(201).json({ user: savedUser, ok: true });
 
   } catch (error) {
     console.log(error);
@@ -294,6 +293,7 @@ router.post('/users/login', async (req, res) => {
       secure: false,
       sameSite: 'lax',
     };
+    await user.addRefreshToken(refreshToken);
     res
       .cookie("accessToken", accessToken, {
         ...cookieOptions,
@@ -312,7 +312,7 @@ router.post('/users/login', async (req, res) => {
 });
 
 
-router.get("/auth/status", (req, res) => {
+router.post("/auth/status", (req, res) => {
   const token = req.cookies?.accessToken;
 
   if (!token) {
@@ -330,36 +330,28 @@ router.get("/auth/status", (req, res) => {
   }
 });
 
-router.get('/users/refresh', async (req, res) => {
+router.post('/users/refresh', async (req, res) => {
   try {
     const refreshToken = req.cookies?.refreshToken;
     if (!refreshToken) {
-      return res.status(401).json({ error: 'No refresh token, login again' });
+      return res.status(401).json({ error: 'No refresh token, login again',ok:false });
     }
 
     let decoded;
     try {
       decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
     } catch (err) {
-      return res.status(403).json({ error: 'Invalid or expired refresh token' });
+      return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
     }
+    const user = User.findById(decoded.id);
+    const valid = user.hasRefreshToken(refreshToken);
+    if (!valid) return res.status(403).json({ error: 'Refresh token not recognized' });
 
     // Generate new access token
-    const newAccessToken = jwt.sign(
-      { userId: decoded.userId, email: decoded.email },
-      key,
-      { expiresIn: '15m' }
-    );
-
-    // Optional: generate a new refresh token (rotating refresh tokens)
-    const newRefreshToken = jwt.sign(
-      { userId: decoded.userId, email: decoded.email },
-      key,
-      { expiresIn: '7d' }
-    );
-
+    const {accessToken,newRefreshToken} = user.generateTokens();
+    await user.addRefreshToken(newRefreshToken);
     // Set cookies
-    res.cookie('accessToken', newAccessToken, {
+    res.cookie('accessToken', accessToken, {
       httpOnly: true,
       secure: false, // true in prod with HTTPS
       sameSite: 'lax',
@@ -373,12 +365,45 @@ router.get('/users/refresh', async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000
     });
 
-    res.status(200).json({ ok: true, msg: 'Tokens refreshed' });
+    res.status(200).json({ ok: true, msg: 'Tokens refreshed' ,user: {email:decoded.email}});
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+
+router.post('/users/logout', async (req, res) => {
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) return res.sendStatus(204); // No content
+
+    // Remove the token object by tokenHash
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+    } catch (err) {
+       console.log(err);
+      return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
+    }
+    const user = User.findBy(decoded.id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await user.removeRefreshToken(refreshToken);
+
+    // Clear cookies
+    res.clearCookie("accessToken", { httpOnly: true, sameSite: "None", secure: true });
+    res.clearCookie("refreshToken", { httpOnly: true, sameSite: "None", secure: true });
+
+    return res.status(200).json({ message: "Logged out successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Logout failed" });
+  }
+});
+
 
 
 module.exports = router;

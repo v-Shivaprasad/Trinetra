@@ -16,7 +16,7 @@ const Navbar = ({ navLinks, modalOps, svgcolor }) => {
   // ✅ Instead, check login state after render
   useEffect(() => {
     fetch("http://localhost:3001/api/auth/status", {
-      method: "GET",
+      method: "POST",
       credentials: "include", // ensure cookies are sent
     })
       .then(async (res) => {
@@ -177,9 +177,7 @@ const Otpcheck = async (e) => {
       return;
     }
 
-    // Store access token immediately
-    localStorage.setItem("token", signupData.accessToken);
-    setTrueLogin(true); // Automatically log in the user
+ // Automatically log in the user
     setshowbtn(true);
 
     // Reset form & OTP

@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
     // Check auth from backend
 useEffect(() => {
   fetch("http://localhost:3001/api/auth/status", {
-    method: "GET",
+    method: "POST",
     credentials: "include",
   })
     .then(async (res) => {
