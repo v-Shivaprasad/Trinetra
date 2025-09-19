@@ -45,11 +45,13 @@ const Myproj = ({ email }) => {
   const InstName = async () => {
     try {
       const profile = await fetch(
-        `http://localhost:3001/api/FindProfile?email=${email}`
-      );
+        `http://localhost:3001/api/users/me`,{
+       method: "POST",
+          credentials: "include",
+        });
       const details = await profile.json();
       console.table(details);
-      const Inst = await details.Profile.institution;
+      const Inst = await details.user.institution;
       setclgName(Inst);
       console.log(clgName);
     } catch (error) {
@@ -62,7 +64,10 @@ const Myproj = ({ email }) => {
 
   const getFav = async () => {
     const result = await fetch(
-      `http://localhost:3001/api/GetFav?email=${email}`
+      'http://localhost:3001/api/GetFav',{
+      method:"POST",
+      credentials:"include",
+    }
     );
     if (result.ok) {
       const respo = await result.json();

@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const multer = require('multer');
 const path = require('path');
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 //models-mongoose
-const { User, Proj, savedPro, LikedProject, Alerts } = require('../models/models');
+const { User, Proj, SavedPro, LikedProject, Alerts } = require('../models/models');
 
 
 
@@ -125,12 +126,11 @@ router.delete('/DeleteAlert/:id', async (req, res) => {
 
 
 
-
 //Retrieve favorites in dasboard save Earlier
-router.get('/GetFav', async (req, res) => {
+router.post('/GetFav',async (req, res) => {
   try {
-    
-    const userSavedData = await savedPro.findOne({ userEmail: req.query.email }).populate('SavedPro._id');
+    const dec = jwt.verify(req.cookies.accessToken,JWT_SECRET);
+    const userSavedData = await SavedPro.findOne({ userEmail: dec.email }).populate('SavedPro._id');
     // console.log(userSavedData);
     if (!userSavedData) {
 
@@ -142,7 +142,7 @@ router.get('/GetFav', async (req, res) => {
     res.json({ favoriteProjects });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: `Internal Server Error ${error}` });
   }
 });
 

@@ -160,30 +160,6 @@ router.get('/users/check-email', async (req, res) => {
 });
 
 
-// router.post('/users', async (req, res) => {
-//   try {
-//     const hashedPassword = await bcrypt.hash(req.body.signpassword, 10);
-
-//     const user = new User({
-//       name: req.body.name,
-//       signemail: req.body.signemail,
-//       profession: req.body.profession,
-//       institution: req.body.institution,
-//       signpassword: hashedPassword,
-//     });
-//    console.log(user);
-//     const resu = await user.save();
-//     res.status(201).json({result: resu,ok:true});
-//   } catch (error) {
-//     console.log(error);
-//     if (error.code === 11000) {
-//       res.status(400).json({ error: 'Email already exists.' ,ok:false});
-//     } else {
-//       console.log(error);
-//       res.status(500).json({ error: 'Internal server error',ok:false });
-//     }
-//   }
-// });
 
 
 
@@ -332,24 +308,25 @@ router.post("/auth/status", (req, res) => {
 
 router.post('/users/refresh', async (req, res) => {
   try {
-    const refreshToken = req.cookies?.refreshToken;
-    if (!refreshToken) {
+    const oldrefreshToken = req.cookies?.refreshToken;
+    if (!oldrefreshToken) {
       return res.status(401).json({ error: 'No refresh token, login again',ok:false });
     }
 
     let decoded;
     try {
-      decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+      decoded = jwt.verify(oldrefreshToken, JWT_REFRESH_SECRET);
     } catch (err) {
       return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
     }
-    const user = User.findById(decoded.id);
-    const valid = user.hasRefreshToken(refreshToken);
+    const user = await User.findById(decoded.id);
+    const valid =await  user.hasRefreshToken(oldrefreshToken);
     if (!valid) return res.status(403).json({ error: 'Refresh token not recognized' });
 
     // Generate new access token
-    const {accessToken,newRefreshToken} = user.generateTokens();
-    await user.addRefreshToken(newRefreshToken);
+    const {accessToken,refreshToken} = await user.generateTokens();
+    console.log(refreshToken);
+    await user.addRefreshToken(refreshToken);
     // Set cookies
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
@@ -358,7 +335,7 @@ router.post('/users/refresh', async (req, res) => {
       maxAge: 15 * 60 * 1000
     });
 
-    res.cookie('refreshToken', newRefreshToken, {
+    res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
       secure: false, // true in prod with HTTPS
       sameSite: 'lax',
@@ -368,7 +345,7 @@ router.post('/users/refresh', async (req, res) => {
     res.status(200).json({ ok: true, msg: 'Tokens refreshed' ,user: {email:decoded.email}});
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: `Internal Server Error ${error}`});
   }
 });
 
@@ -386,7 +363,7 @@ router.post('/users/logout', async (req, res) => {
        console.log(err);
       return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
     }
-    const user = User.findBy(decoded.id);
+    const user = await User.findBy(decoded.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

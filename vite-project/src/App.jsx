@@ -52,9 +52,8 @@ useEffect(() => {
           return;
         }
 
-        const refr = await ref.json();
-        console.log("Refresh response:", refr);
-        setemail(refr.user.email);
+
+        setemail(r.user.email);
       }
     } catch (err) {
       console.error(err);
