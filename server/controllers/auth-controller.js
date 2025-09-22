@@ -162,7 +162,7 @@ router.post('/savedPro', async (req, res) => {
     }
 
     // Check if a document with the given userEmail already exists
-    const userSaved = await savedPro.findOne({ userEmail: email });
+    const userSaved = await SavedPro.findOne({ userEmail: email });
 
     if (userSaved) {
       // Check if the project is already saved in the array
@@ -285,7 +285,7 @@ router.post('/removeSavedPro', async (req, res) => {
     }
 
     // Check if a document with the given userEmail exists
-    const userSaved = await savedPro.findOne({ userEmail: email });
+    const userSaved = await SavedPro.findOne({ userEmail: email });
 
     if (userSaved) {
       // Check if the project is saved in the array

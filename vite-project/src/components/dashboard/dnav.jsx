@@ -6,66 +6,50 @@ import PropTypes from "prop-types";
 
 const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
   const { islogin, setislogin, client, setclient } = useAuth();
-  // const [email, setemail] = useState(" ");
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
+  
   if (!token) {
     useEffect(() => {
       localStorage.setItem("Trueshow", false);
       navigate("/");
     }, [navigate]);
   }
-  const [modopen, setmodopen] = useState(false);
-
-  const ShowModalOps = () => {
-    setmodopen(!modopen);
-    const drop = document.getElementById("dropdownMenuLink");
-
-    if (drop) {
-      const dropdown = new bootstrap.Dropdown(drop);
-      if (!modopen) {
-        dropdown.show();
-      } else {
-        dropdown.hide();
-      }
-    }
-  };
 
   const [Profile, setProfile] = useState([]);
+  
   const handleClick = (modalfun) => {
     modalfun();
   };
+  
   const handleNavLinkClick = (navfun) => {
     navfun();
   };
 
   const profileDetails = async () => {
     try {
-      const profile = await fetch(
-        `http://localhost:3001/api/FindProfile?email=${email}`
-      );
+      const profile = await fetch("http://localhost:3001/api/users/me", {
+          method: "GET",
+          credentials: "include",
+        });
       const details = await profile.json();
       console.table(details);
-
-      // Set the Profile state using a functional update to ensure the latest state
       setProfile((prevProfile) => [details]);
-
-      // Return details if needed, although it's not used in your example
       return details;
     } catch (error) {
       console.error(error);
     }
   };
-  const openProfileModal = () => {
-    const profileModal = new bootstrap.Modal(
-      document.getElementById("staticBackdrop")
-    );
-    profileDetails();
-    profileModal.show();
+
+  const openProfileModal = async () => {
+    await profileDetails();
+    // Let Bootstrap handle the modal opening via data attributes
   };
+
   const handlehome = () => {
     navigate("/");
   };
+
   return (
     <>
       <nav
@@ -97,7 +81,6 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
         <div className="collapse navbar-collapse" id="navbarNav">
           <div className="mx-auto" style={{ alignItems: "center" }}>
             <ul className="navbar-nav">
-              {/* Centered items with even space */}
               {navLinks.map((link, index) => (
                 <li key={index} className="nav-link">
                   <a
@@ -123,7 +106,6 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
           </button>
 
           <div className="ml-auto">
-            {/* Right-aligned items */}
             <div
               className="btn-group dropdown-center"
               style={{ paddingRight: "30px", boxSizing: "border-box" }}
@@ -132,9 +114,8 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
                 className="btn dropdown-toggle btn"
                 role="button"
                 id="dropdownMenuLink"
-                // data-bs-toggle="dropdown"
+                data-bs-toggle="dropdown"
                 aria-expanded="false"
-                onClick={ShowModalOps}
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -166,11 +147,12 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
                       onClick={() => {
                         handleClick(link.modalfun);
                         if (link.label === "Profile") {
-                          // Call a function to open the modal here
                           openProfileModal();
                         }
                       }}
                       className="dropdown-item"
+                      data-bs-toggle="modal"
+                      data-bs-target="#staticBackdrop"
                     >
                       {link.label}
                     </a>
@@ -219,14 +201,12 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
               ></button>
             </div>
             <div className="modal-body">
-              {" "}
               {Profile.map((detail, index) => (
                 <div key={index}>
-                  <p>{`User Name: ${detail.Profile.name}`}</p>
-                  <p>{`Email: ${detail.Profile.signemail}`}</p>
-                  <p>{`Profession: ${detail.Profile.profession}`}</p>
-                  <p>{`Institution: ${detail.Profile.institution}`}</p>
-                  {/* Add more details as needed */}
+                  <p>{`User Name: ${detail.user.name}`}</p>
+                  <p>{`Email: ${detail.user.signemail}`}</p>
+                  <p>{`Profession: ${detail.user.profession}`}</p>
+                  <p>{`Institution: ${detail.user.institution}`}</p>
                 </div>
               ))}
             </div>
@@ -237,6 +217,7 @@ const Dnav = ({ navLinks, modalOps, svgColor, email }) => {
     </>
   );
 };
+
 Dnav.propTypes = {
   navLinks: PropTypes.arrayOf(
     PropTypes.shape({

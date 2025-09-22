@@ -7,7 +7,6 @@ export const AuthProvider = ({ children }) => {
   const [showbtn, setshowbtn] = useState(false);
   const [client, setClient] = useState(null);
 
-    // Check auth from backend
 useEffect(() => {
   fetch("http://localhost:3001/api/auth/status", {
     method: "POST",

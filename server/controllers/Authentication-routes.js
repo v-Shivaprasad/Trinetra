@@ -288,7 +288,7 @@ router.post('/users/login', async (req, res) => {
 });
 
 
-router.post("/auth/status", (req, res) => {
+router.post("/auth/status", async(req, res) => {
   const token = req.cookies?.accessToken;
 
   if (!token) {
@@ -297,12 +297,22 @@ router.post("/auth/status", (req, res) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    const valid = await user.hasRefreshToken(req.cookies.refreshToken);
+      if(!valid){
+      res.clearCookie("accessToken", { httpOnly: true, sameSite: "None", secure: true });
+      res.clearCookie("refreshToken", { httpOnly: true, sameSite: "None", secure: true });
+      return res.json({ authenticated: false });
+
+    }
     return res.json({
       authenticated: true,
       user: { id: decoded.id, email: decoded.email },
     });
   } catch (err) {
-    return res.json({ authenticated: false });
+    console.log(err);
+    return res.json({ authenticated: false ,error:err});
   }
 });
 
@@ -320,12 +330,21 @@ router.post('/users/refresh', async (req, res) => {
       return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
     }
     const user = await User.findById(decoded.id);
+    if(!user.hasRefreshToken(oldrefreshToken)){
+    res.clearCookie("accessToken", { httpOnly: true, sameSite: "None", secure: true });
+    res.clearCookie("refreshToken", { httpOnly: true, sameSite: "None", secure: true });
+
+    }
     const valid =await  user.hasRefreshToken(oldrefreshToken);
-    if (!valid) return res.status(403).json({ error: 'Refresh token not recognized' });
+    if (!valid) return res.
+    clearCookie("accessToken", { httpOnly: true, sameSite: "None", secure: true })
+    .clearCookie("refreshToken", { httpOnly: true, sameSite: "None", secure: true })
+    .status(403).json({ error: 'Refresh token not recognized' });
 
     // Generate new access token
     const {accessToken,refreshToken} = await user.generateTokens();
     console.log(refreshToken);
+    await user.removeRefreshToken(oldrefreshToken);
     await user.addRefreshToken(refreshToken);
     // Set cookies
     res.cookie('accessToken', accessToken, {
@@ -363,7 +382,7 @@ router.post('/users/logout', async (req, res) => {
        console.log(err);
       return res.status(403).json({ error: `Invalid or expired refresh token ${err}`,ok:false});
     }
-    const user = await User.findBy(decoded.id);
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }

@@ -46,7 +46,7 @@ const Myproj = ({ email }) => {
     try {
       const profile = await fetch(
         `http://localhost:3001/api/users/me`,{
-       method: "POST",
+       method: "GET",
           credentials: "include",
         });
       const details = await profile.json();

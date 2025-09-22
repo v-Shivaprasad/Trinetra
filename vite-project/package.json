@@ -15,10 +15,11 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@popperjs/core": "^2.11.8",
     "amqplib": "^0.10.3",
-    "bootstrap": "^5.3.3",
+    "bootstrap": "^5.3.8",
     "core-js": "^3.35.0",
     "dom": "^0.0.3",
     "express": "^4.18.2",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",
@@ -29,6 +30,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@types/bootstrap": "^5.2.10",
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^4.2.1",

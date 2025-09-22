@@ -7,81 +7,74 @@ import {
 } from "react-router-dom";
 import Homemain from "./components/homepage/homemain";
 import Dash from "./components/dashboard/dash";
-
+import "bootstrap/dist/css/bootstrap.min.css";
 const App = () => {
-  const [TrueLogin, setTrueLogin] = useState(false);
-  const [email, setemail] = useState("");
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(true); // 👈 new
+
   const logout = async () => {
     try {
       await fetch("http://localhost:3001/api/users/logout", {
         method: "POST",
-        credentials: "include", // ensure cookies are cleared
+        credentials: "include",
       });
     } catch (err) {
       console.error("Logout failed", err);
     } finally {
-      setemail("")
-      // navigate("/");
+      setEmail("");
     }
   };
-useEffect(() => {
-  const check = async () => {
-    try {
-      const res = await fetch("http://localhost:3001/api/auth/status", {
-        method: "POST",
-        credentials: "include",
-      });
 
-      const data = await res.json();
-      console.log("Status response:", data);
-
-      if (data.authenticated) {
-        // ✅ Access token is valid
-        setemail(data.user.email);
-      } else {
-        // 🔄 Try refresh
-        console.log("hereee");
-        const ref = await fetch("http://localhost:3001/api/users/refresh", {
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const res = await fetch("http://localhost:3001/api/auth/status", {
           method: "POST",
           credentials: "include",
         });
-        const r = await ref.json();
-        console.log(r);
-        if (!r.ok) {
-          await logout();
-          return;
+        const data = await res.json();
+
+        if (data.authenticated) {
+          setEmail(data.user.email);
+        } else {
+          const ref = await fetch("http://localhost:3001/api/users/refresh", {
+            method: "POST",
+            credentials: "include",
+          });
+          const r = await ref.json();
+          if (!r.ok) {
+            await logout();
+            return;
+          }
+          setEmail(r.user.email);
         }
-
-
-        setemail(r.user.email);
+      } catch (err) {
+        console.error(err);
+        await logout();
+      } finally {
+        setLoading(false); // 👈 only decide routes after check
       }
-    } catch (err) {
-      console.error(err);
-      await logout();
-    }
-  };
+    };
 
-  check();
-}, []);
+    check();
+  }, []);
 
-useEffect(() => {
-  if (email) {
-    console.log("Updated email:", email);
+  if (loading) {
+    return <div>Loading...</div>; // 👈 temporary spinner or splash
   }
-}, [email]);
 
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Homemain />} />
-
-        {!email && (
-          <Route path="/dash" element={<Navigate to="/" replace />} />
-        )}
-        {email && <Route path="/dash" element={<Dash email={email}/>} />}
+        <Route
+          path="/dash"
+          element={email ? <Dash email={email} /> : <Navigate to="/" replace />}
+        />
       </Routes>
     </Router>
   );
 };
+
 
 export default App;

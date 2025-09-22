@@ -1,4 +1,4 @@
-import Navbar from "./navbar";
+import Navbar from "./Navbar";
 import Mainbanner from "./mainbanner";
 import Aboutus from "./aboutus";
 import CarouselCard from "./CarouselCard";
