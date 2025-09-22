@@ -4,3 +4,5 @@ node_modules/
 server/Firebase/firebase-credentials.json
 server/Firebase/trinetra-6807b-firebase-adminsdk-gyhqw-b8a3db3650.json
 dist/
+**/.pnpm-store
+**/dist/
